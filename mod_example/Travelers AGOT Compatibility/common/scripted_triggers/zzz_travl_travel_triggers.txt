@@ -1,0 +1,28 @@
+﻿travl_is_teleporting_character_trigger = {
+	OR = {
+		travl_is_vanilla_teleporting_character_trigger = yes
+		travl_is_PoW_teleporting_character_trigger = yes
+		NOT = { exists = location }
+
+		#AGOT Added
+		has_trait = dragon
+	}
+}
+
+travl_can_travel_to_destination_trigger = {
+	NOR = {
+		location = title:b_ruins.title_province
+		$DESTINATION$ = title:b_ruins.title_province
+	}
+}
+
+travl_should_mark_as_added_character_trigger = {
+	$LIEGE$ = {
+		NOR = {
+			has_government = nights_watch_government
+			any_liege_or_above = {
+				has_government = nights_watch_government
+			}
+		}
+	}
+}

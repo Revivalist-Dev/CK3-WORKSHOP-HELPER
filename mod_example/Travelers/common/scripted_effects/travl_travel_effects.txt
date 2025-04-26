@@ -1,0 +1,1424 @@
+﻿travl_travel_effect = {
+	# Determine sender
+	clear_saved_scope = sender
+	if = {
+		limit = { exists = $SENDER$ }
+		$SENDER$ = { save_temporary_scope_as = sender }
+	}
+	else = {
+		save_temporary_scope_as = sender
+	}
+
+	# Determine receiver
+	travl_set_receiver_effect = yes
+
+	# Determine destination
+	travl_set_destination_effect = { RECEIVER = scope:receiver }
+
+	#if = {
+	#	limit = { travl_debug_does_recent_location_matter_trigger = yes }
+	#	travl_debug_log_effect = { MSG = travl_debug_msg_accessing_recent_location }
+	#}
+
+	if = {
+		limit = {
+			NOT = { has_variable = travl_location }
+			exists = capital_province
+			highest_held_title_tier = tier_barony
+		}
+
+		# We are a newly recruited landed baron (e.g. from pool)
+		# Teleport us to our capital directly to avoid overly long trips
+		set_location = capital_province
+	}
+	else_if = {
+		limit = {
+			travl_has_teleported_trigger = no
+		}
+
+		# We don't have a saved location or we are near it
+		# Travel from our current location to the destination
+		travl_start_travel_effect = {
+			SENDER = scope:sender
+			RECEIVER = scope:receiver
+			DESTINATION = scope:destination
+			EVENT = $EVENT$
+		}
+	}
+	else_if = {
+		limit = {
+			exists = scope:destination
+			location = scope:destination
+		}
+
+		# We are away from our saved location, and our current location is the destination,
+		# so we teleported to the "right" location
+		# Restore our saved location and travel from it to our current one
+		travl_restore_location_effect = yes
+		travl_start_travel_effect = {
+			SENDER = scope:sender
+			RECEIVER = scope:receiver
+			DESTINATION = scope:destination
+			EVENT = $EVENT$
+		}
+	}
+	else_if = {
+		limit = {
+			NOT = { has_variable = travl_delayed_on_action }
+		}
+
+		# Write debug log message
+		travl_debug_log_effect = { MSG = travl_debug_msg_restoring_location }
+
+		# We are away from our saved location, and our current location is not the destination,
+		# so we teleported to the "wrong" location
+		# Restore our saved location without travel
+		travl_restore_location_effect = yes
+	}
+}
+
+travl_restore_location_if_teleported_effect = {
+	#if = {
+	#	limit = { travl_debug_does_recent_location_matter_trigger = yes }
+	#	travl_debug_log_effect = { MSG = travl_debug_msg_accessing_recent_location }
+	#}
+
+	if = {
+		limit = {
+			travl_has_teleported_trigger = yes
+		}
+
+		# Write debug log message
+		travl_debug_log_effect = { MSG = travl_debug_msg_restoring_location }
+
+		travl_restore_location_effect = yes
+	}
+}
+
+travl_start_travel_effect = {
+	if = {
+		limit = {
+			is_alive = yes
+			exists = $RECEIVER$
+			exists = $DESTINATION$
+
+			# Not imprisoned, hostage, or guest of somebody else
+			#travl_may_travel_to_receiver_trigger = { RECEIVER = $RECEIVER$ }
+
+			NOR = {
+				# Not traveling and already in the destination
+				AND = {
+					is_travelling = no
+					location = $DESTINATION$
+				}
+
+				# Already traveling to the destination and near current location
+				AND = {
+					travl_is_travelling_to_destination_trigger = {
+						RECEIVER = $RECEIVER$
+						DESTINATION = $DESTINATION$
+					}
+					travl_is_at_current_location_trigger = yes
+				}
+
+				# In the receiver's entourage
+				travl_is_in_travel_entourage_of_trigger = { OWNER = $RECEIVER$ }
+
+				# Vanilla travel owner, and either the receiver, a vanilla traveler, or a PoW traveler
+				AND = {
+					travl_is_vanilla_travel_owner_trigger = yes
+					OR = {
+						this = $RECEIVER$
+						travl_is_vanilla_traveler_trigger = yes
+						travl_is_PoW_traveler_trigger = yes
+					}
+				}
+			}
+
+			# This destination can be reached by travel
+			travl_can_travel_to_destination_trigger = { DESTINATION = $DESTINATION$ }
+		}
+
+		travl_set_event_effect = { EVENT = $EVENT$ }
+
+		# Check that the receiver is correct
+		if = {
+			limit = {
+				exists = $RECEIVER$.capital_province
+				NOT = { default_location = $RECEIVER$.capital_province }
+			}
+			default_location = { save_temporary_scope_as = default_location }
+			travl_error_log_2_effect = {
+				MSG = travl_error_msg_starting_travel_with_incorrect_receiver
+				NAME1 = receiver TYPE1 = flag:character
+				NAME2 = default_location TYPE2 = flag:location
+			}
+		}
+
+		# Write debug log message
+		if = {
+			limit = {
+				debug_only = yes
+				current_travel_plan ?= {
+					travel_plan_owner = {
+						is_alive = yes
+						has_variable = travl_travel_sender
+						has_variable = travl_travel_receiver
+					}
+				}
+			}
+
+			travl_debug_log_effect = { MSG = travl_debug_msg_aborting_travel_to_start_travel }
+		}
+
+		# Suppress events, we'll update leader and companions manually
+		set_variable = {
+			name = travl_suppress_events
+			value = yes
+			days = 1
+		}
+
+		# Remove travel variables
+		travl_remove_sender_and_receiver_effect = yes
+		travl_remove_prisoner_flags_effect = yes
+		travl_remove_leader_or_companion_effect = yes
+
+		# Remove vanilla travel variables
+		travl_remove_vanilla_travel_variables_effect = yes
+
+		# Move added characters back to pool
+		travl_move_added_characters_to_pool_effect = yes
+
+		# Abort current travel plan
+		location = { save_temporary_scope_as = current_location }
+		current_travel_plan ?= {
+			if = {
+				limit = { travel_plan_owner = prev }
+				abort_travel_plan = yes
+			}
+			else = {
+				remove_character = prev
+			}
+		}
+		set_location = scope:current_location
+
+		# Determine travel owner
+		save_temporary_scope_as = traveler
+		clear_saved_scope = travel_owner
+		$RECEIVER$ = {
+			if = {
+				limit = {
+					travl_is_travelling_to_destination_trigger = {
+						RECEIVER = $RECEIVER$
+						DESTINATION = $DESTINATION$
+					}
+					has_variable = travl_travel_leader
+					OR = {
+						location = scope:traveler.location
+						current_travel_plan ?= {
+							current_location = scope:traveler.location
+							days_travelled <= 1
+						}
+					}
+				}
+				save_temporary_scope_as = travel_owner
+			}
+		}
+
+		if = {
+			limit = {
+				is_ruler = no
+				is_travelling = no
+				exists = scope:travel_owner
+			}
+
+			#travl_debug_log_effect = { MSG = travl_debug_msg_adding_entourage_character }
+
+			# Add character to the travel owner's entourage
+			save_temporary_scope_as = companion
+			scope:travel_owner = {
+				current_travel_plan ?= {
+					if = {
+						limit = {
+							scope:travel_owner = {
+								is_imprisoned = no
+								court_position:travel_leader_court_position ?= scope:companion
+							}
+						}
+						set_travel_leader = scope:companion
+					}
+					else = {
+						add_companion = scope:companion
+					}
+				}
+			}
+		}
+		else = {
+			# Set travel variables
+			travl_set_sender_and_receiver_effect = {
+				SENDER = $SENDER$
+				RECEIVER = $RECEIVER$
+			}
+
+			# Set prisoner flags
+			travl_set_prisoner_flags_effect = yes
+
+			# Add character as leader or companion
+			travl_add_leader_or_companion_effect = {
+				RECEIVER = $RECEIVER$
+				DESTINATION = $DESTINATION$
+			}
+
+			# Recruit escort character to serve as leader under special conditions, e.g. imprisoned
+			if = {
+				limit = { var:travl_travel_leader ?= this }
+
+				travl_recruit_escort_effect = yes
+				scope:escort ?= {
+					#travl_debug_log_effect = { MSG = travl_debug_msg_recruited_as_escort }
+
+					# Set travel variables for the escort
+					travl_set_sender_and_receiver_effect = {
+						SENDER = $SENDER$
+						RECEIVER = $RECEIVER$
+					}
+					travl_set_event_effect = { EVENT = flag:escort }
+
+					# Set the escort as the new leader
+					prev = { add_to_temporary_list = new_companions }
+					travl_set_as_leader_effect = { COMPANIONS = new_companions }
+
+					# Set location to the original leader location
+					set_location = prev.location
+
+					#travl_debug_log_effect = { MSG = travl_debug_msg_starting_travel_for_escort }
+
+					# Start new travel plan for the escort
+					start_travel_plan = {
+						destination = $DESTINATION$
+						return_trip = no
+						players_use_planner = no
+						on_start_on_action = travl_travel_on_departure
+						on_arrival_on_action = travl_travel_on_arrival
+						on_arrival_destinations = last
+					}
+
+					# Add the escort to the receiver's court
+					if = {
+						limit = {
+							NOT = { is_courtier_of = $RECEIVER$ }
+						}
+						$RECEIVER$ = {
+							add_courtier = scope:escort
+						}
+
+						# Set the knight status of the escort to forbid so that they are not knighted automatically.
+						if = {
+							limit = { is_potential_knight = yes }
+							set_knight_status = forbid
+						}
+					}
+				}
+			}
+
+			# Recruit travel leader for traveling rulers to prevent them from using their own one
+			# under special conditions, e.g. imprisoned
+			if = {
+				limit = { is_ruler = yes }
+
+				travl_recruit_travel_leader_effect = yes
+				#scope:travel_leader ?= {
+				#	travl_debug_log_effect = { MSG = travl_debug_msg_recruited_as_travel_leader }
+				#}
+			}
+
+			if = {
+				limit = { exists = scope:travel_leader }
+
+				#travl_debug_log_effect = { MSG = travl_debug_msg_starting_travel_with_travel_leader }
+
+				# Start new travel plan with travel leader
+				start_travel_plan = {
+					destination = $DESTINATION$
+					return_trip = no
+					travel_leader = scope:travel_leader
+					players_use_planner = no
+					on_start_on_action = travl_travel_on_departure
+					on_arrival_on_action = travl_travel_on_arrival
+					on_arrival_destinations = last
+				}
+				send_interface_toast = {
+					title = travl_travel_leader_recruited.t
+					left_icon = scope:travel_leader
+					show_as_tooltip = {
+						current_travel_plan ?= {
+							set_travel_leader = scope:travel_leader
+						}
+					}
+				}
+			}
+			else = {
+				#travl_debug_log_effect = { MSG = travl_debug_msg_starting_travel }
+
+				# Start new travel plan
+				start_travel_plan = {
+					destination = $DESTINATION$
+					return_trip = no
+					players_use_planner = no
+					on_start_on_action = travl_travel_on_departure
+					on_arrival_on_action = travl_travel_on_arrival
+					on_arrival_destinations = last
+				}
+			}
+
+			# Add travel plan modifiers
+			if = {
+				limit = { is_imprisoned = yes }
+				current_travel_plan ?= {
+					add_travel_plan_modifier = travl_is_imprisoned_modifier
+				}
+			}
+
+			# Add travel plan modifiers for game rules
+			if = {
+				limit = { has_game_rule = travl_travel_safety_medium }
+				current_travel_plan ?= {
+					add_travel_plan_modifier = travl_travel_safety_medium_modifier
+				}
+			}
+			else_if = {
+				limit = { has_game_rule = travl_travel_safety_high }
+				current_travel_plan ?= {
+					add_travel_plan_modifier = travl_travel_safety_high_modifier
+				}
+			}
+			else_if = {
+				limit = { has_game_rule = travl_travel_safety_very_high }
+				current_travel_plan ?= {
+					add_travel_plan_modifier = travl_travel_safety_very_high_modifier
+				}
+			}
+		}
+	}
+}
+
+travl_abort_travel_effect = {
+	if = {
+		limit = {
+			current_travel_plan ?= {
+				travel_plan_owner = {
+					is_alive = yes
+					has_variable = travl_travel_sender
+					has_variable = travl_travel_receiver
+				}
+			}
+		}
+
+		travl_set_event_effect = { EVENT = $EVENT$ }
+
+		# Write debug log message
+		travl_debug_log_effect = { MSG = travl_debug_msg_aborting_travel_completely }
+
+		# Suppress events, we'll update leader and companions manually
+		set_variable = {
+			name = travl_suppress_events
+			value = yes
+			days = 1
+		}
+
+		# Remove travel variables
+		travl_remove_sender_and_receiver_effect = yes
+		travl_remove_prisoner_flags_effect = yes
+		travl_remove_leader_or_companion_effect = yes
+
+		# Move added characters back to pool
+		travl_move_added_characters_to_pool_effect = yes
+
+		# Abort current travel plan
+		location = { save_temporary_scope_as = current_location }
+		current_travel_plan ?= {
+			if = {
+				limit = { travel_plan_owner = prev }
+				abort_travel_plan = yes
+			}
+			else = {
+				remove_character = prev
+			}
+		}
+		set_location = scope:current_location
+	}
+}
+
+travl_add_leader_or_companion_effect = {
+	# Find an existing travel leader in the current location
+	location = {
+		random_character_in_location = {
+			limit = {
+				travl_is_travelling_to_destination_trigger = { 
+					RECEIVER = $RECEIVER$
+					DESTINATION = $DESTINATION$
+				}
+				var:travl_travel_leader ?= this
+			}
+			save_temporary_scope_as = leader1
+		}
+	}
+	if = {
+		limit = { NOT = { exists = scope:leader1 } }
+
+		# As a fallback, find an existing travel leader in the destination
+		# This may happen if they have been teleported there after starting their travel
+		save_temporary_scope_as = traveler
+		$DESTINATION$ = {
+			random_character_in_location = {
+				limit = {
+					travl_is_travelling_to_destination_trigger = { 
+						RECEIVER = $RECEIVER$
+						DESTINATION = $DESTINATION$
+					}
+					var:travl_travel_leader ?= this
+					current_travel_plan ?= {
+						current_location = scope:traveler.location
+						days_travelled <= 1
+					}
+				}
+				save_temporary_scope_as = leader1
+			}
+		}
+	}
+
+	if = {
+		limit = { exists = scope:leader1 }
+
+		# Add character as companion
+		scope:leader1 = {
+			travl_get_all_companions_effect = { COMPANIONS = companions1 }
+		}
+		add_to_temporary_list = companions1
+	}
+	else = {
+		# Set character as leader
+		save_temporary_scope_as = leader1
+	}
+
+	# Update leader and companions for all characters
+	scope:leader1 ?= {
+		travl_set_as_leader_effect = { COMPANIONS = companions1 }
+	}
+}
+
+travl_remove_leader_or_companion_effect = {
+	# Get leader and companions
+	var:travl_travel_leader ?= { save_temporary_scope_as = leader2 }
+	if = {
+		limit = { scope:leader2 ?= this }
+		# If this is the leader, it's safe to get companions without is_alive check
+		# Get all companions, not just the alive ones, since the one to be removed might be dead
+		travl_get_all_companions_effect = { COMPANIONS = companions2 }
+	}
+	else = {
+		# Otherwise, check that the leader is alive before getting the companions
+		scope:leader2 ?= {
+			if = {
+				limit = { is_alive = yes }
+				travl_get_all_companions_effect = { COMPANIONS = companions2 }
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			scope:leader2 ?= this
+			any_in_list = {
+				list = companions2
+				count > 0
+			}
+		}
+
+		travl_debug_log_effect = { MSG = travl_debug_msg_changing_leader }
+		save_scope_as = old_leader
+
+		# Set random companion as leader
+		random_in_list = {
+			list = companions2
+			save_temporary_scope_as = leader2
+			remove_from_list = companions2
+		}
+	}
+	else_if = {
+		limit = { is_in_list = companions2 }
+
+		travl_debug_log_effect = { MSG = travl_debug_msg_removing_companion }
+		save_scope_as = old_companion
+
+		# Remove character as companion
+		remove_from_list = companions2
+	}
+
+	# Update leader and companions for remaining characters
+	scope:leader2 ?= {
+		travl_set_as_leader_effect = { COMPANIONS = companions2 }
+	}
+
+	# Remove leader and companions for this character
+	travl_remove_leader_and_companions_effect = yes
+
+	# Trigger an event for the new leader
+	scope:leader2 ?= {
+		if = {
+			limit = { exists = scope:old_leader }
+			trigger_event = {
+				on_action = travl_on_leader_changed
+			}
+		}
+		else_if = {
+			limit = { exists = scope:old_companion }
+			trigger_event = {
+				on_action = travl_on_companion_removed
+			}
+		}
+	}
+}
+
+travl_get_travelers_effect = {
+	$LEADER$ = {
+		add_to_temporary_list = $TRAVELERS$
+		current_travel_plan ?= {
+			every_entourage_character = {
+				add_to_temporary_list = $TRAVELERS$
+			}
+		}
+	}
+	every_in_list = {
+		list = $COMPANIONS$
+		add_to_temporary_list = $TRAVELERS$
+		current_travel_plan ?= {
+			every_entourage_character = {
+				add_to_temporary_list = $TRAVELERS$
+			}
+		}
+	}
+}
+
+travl_set_sender_and_receiver_effect = {
+	set_variable = {
+		name = travl_travel_sender
+		value = $SENDER$
+		years = 2
+	}
+	set_variable = {
+		name = travl_travel_receiver
+		value = $RECEIVER$
+		years = 2
+	}
+}
+
+travl_set_prisoner_flags_effect = {
+	if = {
+		limit = {
+			is_imprisoned = yes
+			has_game_rule = travl_prison_interactions_disabled
+		}
+
+		# Add is_being_tortured to disable prison interactions
+		add_character_flag = {
+			flag = is_being_tortured
+			years = 2
+		}
+
+		# Move the prisoner to a special prison type
+		if = {
+			limit = {
+				NOT = { is_in_prison_type = travl_travel_prison_type }
+			}
+			if = {
+				limit = { is_in_prison_type = house_arrest }
+				set_variable = {
+					name = travl_prison_type
+					value = flag:house_arrest
+					years = 2
+				}
+			}
+			else = {
+				set_variable = {
+					name = travl_prison_type
+					value = flag:dungeon
+					years = 2
+				}
+			}
+			change_prison_type = travl_travel_prison_type
+		}
+	}
+}
+
+travl_remove_sender_and_receiver_effect = {
+	if = {
+		limit = { has_variable = travl_travel_sender }
+		remove_variable = travl_travel_sender
+	}
+	if = {
+		limit = { has_variable = travl_travel_receiver }
+		remove_variable = travl_travel_receiver
+	}
+}
+
+travl_remove_prisoner_flags_effect = {
+	# Remove is_being_tortured to enable prison interactions
+	if = {
+		limit = { has_character_flag = is_being_tortured }
+		remove_character_flag = is_being_tortured
+	}
+
+	# Move the prisoner back to their original prison type
+	if = {
+		limit = { has_variable = travl_prison_type }
+		if = {
+			limit = {
+				is_imprisoned = yes
+				is_in_prison_type = travl_travel_prison_type
+			}
+			if = {
+				limit = { var:travl_prison_type = flag:house_arrest }
+				change_prison_type = house_arrest
+			}
+			else = {
+				change_prison_type = dungeon
+			}
+		}
+		remove_variable = travl_prison_type
+	}
+}
+
+travl_set_as_leader_effect = {
+	travl_set_leader_and_companions_effect = {
+		LEADER = this
+		COMPANIONS = $COMPANIONS$
+	}
+	every_in_list = {
+		list = $COMPANIONS$
+		travl_set_leader_and_companions_effect = {
+			LEADER = prev
+			COMPANIONS = none
+		}
+	}
+}
+
+travl_set_leader_and_companions_effect = {
+	if = {
+		limit = { is_alive = yes }
+		set_variable = {
+			name = travl_travel_leader
+			value = $LEADER$
+			years = 2
+		}
+		clear_variable_list = travl_travel_companions
+		save_temporary_scope_as = character
+		every_in_list = {
+			list = $COMPANIONS$
+			scope:character = {
+				add_to_variable_list = {
+					name = travl_travel_companions
+					target = prev
+				}
+			}
+		}
+	}
+}
+
+travl_remove_leader_and_companions_effect = {
+	if = {
+		limit = { has_variable = travl_travel_leader }
+		remove_variable = travl_travel_leader
+	}
+	clear_variable_list = travl_travel_companions
+}
+
+travl_get_companions_effect = {
+	if = {
+		limit = { has_variable_list = travl_travel_companions }
+		every_in_list = {
+			variable = travl_travel_companions
+			limit = { is_alive = yes }
+			add_to_temporary_list = $COMPANIONS$
+		}
+	}
+}
+
+travl_get_all_companions_effect = {
+	if = {
+		limit = { has_variable_list = travl_travel_companions }
+		every_in_list = {
+			variable = travl_travel_companions
+			add_to_temporary_list = $COMPANIONS$
+		}
+	}
+}
+
+travl_set_event_effect = {
+	set_variable = {
+		name = travl_travel_event
+		value = $EVENT$
+		days = 2
+	}
+}
+
+travl_ensure_all_locations_effect = {
+	travl_ensure_location_effect = { LOCATION = $LOCATION$ }
+	current_travel_plan ?= {
+		every_entourage_character = {
+			limit = { is_alive = yes }
+			travl_ensure_location_effect = { LOCATION = $LOCATION$ }
+		}
+	}
+}
+
+travl_ensure_army_character_locations_effect = {
+	#travl_debug_log_effect = { MSG = travl_debug_msg_ensuring_army_character_locations }
+	# Ensure the location of the army commander
+	scope:army.army_commander ?= {
+		travl_ensure_location_effect = { LOCATION = scope:army.location }
+	}
+	# Ensure the locations of all army knights
+	every_knight = {
+		if = {
+			limit = {
+				knight_army ?= scope:army
+				# Ruler and traveling knights are moved back automatically
+				is_ruler = no
+				is_travelling = no
+			}
+			travl_ensure_location_effect = { LOCATION = scope:army.location }
+		}
+	}
+}
+
+travl_ensure_location_effect = {
+	if = {
+		limit = { NOT = { location ?= $LOCATION$ } }
+		#travl_debug_log_effect = { MSG = travl_debug_msg_ensuring_location }
+		set_location = $LOCATION$
+	}
+}
+
+travl_set_all_locations_effect = {
+	travl_set_location_effect = yes
+	current_travel_plan ?= {
+		every_entourage_character = {
+			limit = { is_alive = yes }
+			travl_set_location_effect = yes
+		}
+	}
+}
+
+travl_set_location_effect = {
+	#travl_debug_remove_location_date_effect = yes
+	set_variable = { name = travl_location value = location }
+}
+
+travl_set_custom_location_effect = {
+	#travl_debug_remove_location_date_effect = yes
+	set_variable = { name = travl_location value = $LOCATION$ }
+}
+
+travl_remove_location_effect = {
+	#travl_debug_remove_location_date_effect = yes
+	remove_variable = travl_location
+}
+
+travl_set_location_with_date_effect = {
+	#travl_debug_set_location_date_on_set_effect = yes
+	set_variable = { name = travl_location value = location }
+}
+
+travl_remove_location_with_date_effect = {
+	#travl_debug_set_location_date_on_remove_effect = yes
+	remove_variable = travl_location
+}
+
+travl_restore_location_effect = {
+	set_location = var:travl_location
+}
+
+travl_remove_vanilla_travel_variables_effect = {
+	# Hostage, guardian, or ward returning home
+	remove_variable ?= short_hostage_duration
+	remove_variable ?= long_hostage_duration
+	remove_variable ?= hostage_duration
+	remove_variable ?= ward_educated
+	remove_variable ?= guardian_educated
+}
+
+travl_get_message_recipients_effect = {
+	if = {
+		limit = {
+			exists = $SENDER$
+			travl_travel_should_send_message_trigger = { CHARACTER = $SENDER$ }
+		}
+		$SENDER$ = { add_to_list = $RECIPIENTS$ }
+	}
+	if = {
+		limit = {
+			exists = $RECEIVER$
+			NOT = { $RECEIVER$ = $SENDER$ }
+			travl_travel_should_send_message_trigger = { CHARACTER = $RECEIVER$ }
+		}
+		$RECEIVER$ = { add_to_list = $RECIPIENTS$ }
+	}
+}
+
+travl_send_messages_effect = {
+	save_temporary_scope_as = character
+	every_in_list = {
+		list = $RECIPIENTS$
+
+		travl_send_message_effect = {
+			CHARACTER = scope:character
+			TRAVELERS = $TRAVELERS$
+			TITLE = $TITLE$
+			TEXT = $TEXT$
+			TEXT_ADDED_CHARACTER = $TEXT_ADDED_CHARACTER$
+			OBJECT = $OBJECT$
+		}
+	}
+}
+
+travl_send_message_effect = {
+	if = {
+		limit = {
+			has_game_rule = travl_travel_messages_enabled
+			list_size = { name = $TRAVELERS$ value > 0 }
+		}
+
+		save_temporary_scope_as = message_recipient
+		send_interface_message = {
+			type = travl_msg_travel
+			title = $TITLE$
+			right_icon = $CHARACTER$
+
+			every_in_list = {
+				list = $TRAVELERS$
+				if = {
+					limit = { has_character_flag = travl_added_character }
+					custom_description = {
+						text = $TEXT_ADDED_CHARACTER$
+						subject = this
+						object = $OBJECT$
+					}
+				}
+				else = {
+					custom_description = {
+						text = $TEXT$
+						subject = this
+						object = $OBJECT$
+					}
+				}
+			}
+		}
+	}
+}
+
+travl_escape_from_prison_prisoners_effect = {
+	hidden_effect = {
+		# Collect message recipients
+		every_in_list = {
+			list = $PRISONERS$
+			limit = { is_alive = yes }
+			travl_get_prisoner_recipients_effect = {
+				IMPRISONER = imprisoner
+				RECIPIENTS = escaped_from_prison_recipients
+			}
+		}
+
+		# Send messages to all recipients
+		every_in_list = {
+			list = escaped_from_prison_recipients
+
+			if = {
+				limit = { this = imprisoner }
+				travl_send_escaped_from_prison_message_effect = { TYPE = bad }
+			}
+			else = {
+				travl_send_escaped_from_prison_message_effect = { TYPE = good }
+			}
+
+			clear_variable_list = travl_prisoners
+		}
+	}
+
+	ordered_in_list = {
+		list = $PRISONERS$
+		limit = { is_alive = yes }
+		order_by = highest_held_title_tier
+		max = 100
+		check_range_bounds = no
+
+		travl_escape_from_prison_effect = yes
+	}
+}
+
+travl_imprison_prisoners_effect = {
+	hidden_effect = {
+		# Collect message recipients
+		every_in_list = {
+			list = $PRISONERS$
+			limit = { is_alive = yes }
+			travl_get_prisoner_recipients_effect = {
+				IMPRISONER = $IMPRISONER$
+				RECIPIENTS = imprisoned_recipients
+			}
+		}
+
+		# Send messages to all recipients
+		every_in_list = {
+			list = imprisoned_recipients
+
+			if = {
+				limit = { this = $IMPRISONER$ }
+				travl_send_imprisoned_message_effect = {
+					IMPRISONER = $IMPRISONER$
+					TYPE = good
+				}
+			}
+			else = {
+				travl_send_imprisoned_message_effect = {
+					IMPRISONER = $IMPRISONER$
+					TYPE = bad
+				}
+			}
+
+			clear_variable_list = travl_prisoners
+		}
+	}
+
+	ordered_in_list = {
+		list = $PRISONERS$
+		limit = { is_alive = yes }
+		order_by = highest_held_title_tier
+		max = 100
+		check_range_bounds = no
+
+		travl_imprison_effect = { IMPRISONER = $IMPRISONER$ }
+	}
+}
+
+travl_get_prisoner_recipients_effect = {
+	add_to_temporary_list = $RECIPIENTS$
+	add_to_variable_list = {
+		name = travl_prisoners
+		target = this
+	}
+	liege ?= {
+		add_to_temporary_list = $RECIPIENTS$
+		add_to_variable_list = {
+			name = travl_prisoners
+			target = prev
+		}
+	}
+	$IMPRISONER$ ?= {
+		add_to_temporary_list = $RECIPIENTS$
+		add_to_variable_list = {
+			name = travl_prisoners
+			target = prev
+		}
+	}
+
+	# Add the player as a recipient (debug-only)
+	#if = {
+	#	limit = { debug_only = yes }
+	#	random_player = {
+	#		add_to_temporary_list = $RECIPIENTS$
+	#		add_to_variable_list = {
+	#			name = travl_prisoners
+	#			target = prev
+	#		}
+	#	}
+	#}
+}
+
+travl_send_escaped_from_prison_message_effect = {
+	ordered_in_list = {
+		variable = travl_prisoners
+		order_by = highest_held_title_tier
+		save_temporary_scope_as = prisoner
+	}
+
+	#travl_debug_log_effect = { MSG = travl_debug_msg_sending_escaped_from_prison_message }
+	send_interface_message = {
+		type = event_prison_$TYPE$
+		title = travl_msg_escaped_from_prison
+		right_icon = scope:prisoner
+		show_as_tooltip = {
+			every_in_list = {
+				variable = travl_prisoners
+				release_from_prison = yes
+			}
+		}
+	}
+}
+
+travl_send_imprisoned_message_effect = {
+	ordered_in_list = {
+		variable = travl_prisoners
+		order_by = highest_held_title_tier
+		save_temporary_scope_as = prisoner
+	}
+
+	#travl_debug_log_effect = { MSG = travl_debug_msg_sending_imprisoned_message }
+	send_interface_message = {
+		type = event_prison_$TYPE$
+		title = travl_msg_imprisoned
+		right_icon = scope:prisoner
+		show_as_tooltip = {
+			every_in_list = {
+				variable = travl_prisoners
+				$IMPRISONER$ = {
+					imprison = {
+						target = prev
+						type = dungeon
+					}
+				}
+			}
+		}
+	}
+}
+
+travl_escape_from_prison_effect = {
+	travl_debug_log_effect = { MSG = travl_debug_msg_escaping_from_prison }
+
+	# Add "escaped from prison" opinion
+	imprisoner ?= {
+		save_temporary_scope_as = imprisoner1
+		if = {
+			limit = {
+				OR = {
+					has_revoke_title_reason = prev
+					has_banish_reason = prev
+					has_execute_reason = prev
+				}
+			}
+			add_opinion = {
+				target = prev
+				modifier = escaped_from_prison_crime
+			}
+		}
+		else = {
+			add_opinion = {
+				target = prev
+				modifier = escaped_from_prison_opinion
+			}
+		}
+	}
+
+	# Add "escaped from prison" memory
+	create_character_memory = {
+		type = escaped_from_prison_memory
+		participants = {
+			imprisoner = scope:imprisoner1
+		}
+	}
+
+	# Prevent "released from prison" memory and avoid other notifications
+	add_character_flag = {
+		flag = escaped_from_prison_flag
+		days = 1
+	}
+	add_character_flag = {
+		flag = block_for_prison_release_notification
+		days = 1
+	}
+
+	# Remove prisoner flags and move to original prison type
+	hidden_effect = {
+		travl_remove_prisoner_flags_effect = yes
+	}
+
+	# Actually release from prison
+	release_from_prison = yes
+}
+
+travl_imprison_effect = {
+	travl_debug_log_effect = { MSG = travl_debug_msg_imprisoning }
+
+	# Actually imprison
+	$IMPRISONER$ = {
+		imprison = {
+			target = prev
+			type = dungeon
+		}
+	}
+
+	# Set prisoner flags and move to "travel" prison type
+	hidden_effect = {
+		travl_set_prisoner_flags_effect = yes
+	}
+}
+
+travl_set_receiver_effect = {
+	clear_saved_scope = receiver
+	if = {
+		limit = { exists = imprisoner }
+		imprisoner = { save_temporary_scope_as = receiver }
+	}
+	else_if = {
+		limit = { exists = capital_province }
+		save_temporary_scope_as = receiver
+	}
+	else_if = {
+		limit = { exists = warden }
+		warden = { save_temporary_scope_as = receiver }
+	}
+	else_if = {
+		limit = { exists = host }
+		host = { save_temporary_scope_as = receiver }
+	}
+	else_if = {
+		limit = { exists = liege }
+		liege = { save_temporary_scope_as = receiver }
+	}
+}
+
+travl_set_destination_effect = {
+	clear_saved_scope = destination
+	if = {
+		limit = {
+			$RECEIVER$ ?= {
+				is_landless_adventurer = yes
+				current_travel_plan ?= {
+					is_travel_with_domicile = yes
+				}
+			}
+		}
+
+		# For landless adventurers traveling with domicile,
+		# set the destination to their final destination as their capital provice changes to every province they move into
+		$RECEIVER$.current_travel_plan.final_destination_province ?= {
+			save_temporary_scope_as = destination
+		}
+	}
+	else = {
+		$RECEIVER$.capital_province ?= {
+			save_temporary_scope_as = destination
+		}
+	}
+}
+
+travl_notify_liege_effect = {
+	# Trigger on_courtier_event event for liege
+	liege ?= {
+		save_temporary_scope_as = liege
+		if = {
+			limit = {
+				is_alive = yes
+				exists = capital_province
+			}
+
+			# Determine destination
+			travl_set_destination_effect = { RECEIVER = scope:liege }
+
+			# Trigger travl_on_courtier_event if needed
+			if = {
+				limit = {
+					travl_is_teleporting_character_trigger = no
+					travl_should_notify_trigger = { DESTINATION = scope:destination }
+				}
+				trigger_event = {
+					on_action = travl_on_courtier_event
+				}
+			}
+		}
+	}
+}
+
+travl_notify_courtiers_effect = {
+	# Trigger on_liege_event event for prisoners, hostages, guests, and courtiers
+	save_temporary_scope_as = liege
+	if = {
+		limit = {
+			is_alive = yes
+			exists = capital_province
+		}
+
+		every_prisoner = {
+			add_to_temporary_list = courtiers
+		}
+		every_warden_hostage = {
+			limit = { is_imprisoned = no }
+			add_to_temporary_list = courtiers
+		}
+		every_foreign_court_guest = {
+			limit = { is_imprisoned = no }
+			add_to_temporary_list = courtiers
+		}
+		every_pool_guest = {
+			limit = { is_imprisoned = no }
+			add_to_temporary_list = courtiers
+		}
+		every_courtier = {
+			limit = {
+				is_imprisoned = no
+				is_hostage = no
+				is_foreign_court_guest = no
+			}
+			add_to_temporary_list = courtiers
+		}
+
+		# Determine destination
+		travl_set_destination_effect = { RECEIVER = scope:liege }
+
+		# Trigger travl_on_liege_event for all courtiers if needed
+		every_in_list = {
+			list = courtiers
+			limit = {
+				travl_is_teleporting_character_trigger = no
+				travl_should_notify_trigger = { DESTINATION = scope:destination }
+			}
+			trigger_event = {
+				on_action = travl_on_liege_event
+			}
+		}
+	}
+}
+
+travl_recruit_escort_effect = {
+	clear_saved_scope = escort
+	if = {
+		limit = {
+			is_imprisoned = yes
+			exists = imprisoner
+		}
+
+		travl_recruit_prison_guard_effect = yes
+		scope:prison_guard = {
+			save_temporary_scope_as = escort
+		}
+	}
+}
+
+travl_recruit_travel_leader_effect = {
+	clear_saved_scope = travel_leader
+	if = {
+		limit = {
+			is_imprisoned = yes
+			exists = imprisoner
+		}
+
+		travl_recruit_prison_guard_effect = yes
+		scope:prison_guard = {
+			save_temporary_scope_as = travel_leader
+		}
+	}
+}
+
+travl_recruit_prison_guard_effect = {
+	# Try to find a suitable courtier or pool character, or else create a new one
+	clear_saved_scope = prison_guard
+	imprisoner = { save_temporary_scope_as = imprisoner1 }
+	if = {
+		limit = {
+			scope:imprisoner1 = {
+				any_courtier = {
+					travl_can_be_prison_guard_trigger = { ARMY_OWNER = scope:imprisoner1 }
+				}
+			}
+		}
+		travl_debug_log_effect = { MSG = travl_debug_msg_choosing_courtier_prison_guard_character }
+		scope:imprisoner1 = {
+			random_courtier = {
+				limit = {
+					travl_can_be_prison_guard_trigger = { ARMY_OWNER = scope:imprisoner1 }
+				}
+				save_temporary_scope_as = prison_guard
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_pool_character = {
+				province = scope:imprisoner1.capital_province
+				travl_can_be_prison_guard_trigger = { ARMY_OWNER = scope:imprisoner1 }
+			}
+		}
+		travl_debug_log_effect = { MSG = travl_debug_msg_choosing_pool_prison_guard_character }
+		random_pool_character = {
+			province = scope:imprisoner1.capital_province
+			limit = {
+				travl_can_be_prison_guard_trigger = { ARMY_OWNER = scope:imprisoner1 }
+			}
+			save_temporary_scope_as = prison_guard
+		}
+		scope:prison_guard = {
+			if = {
+				limit = {
+					travl_should_mark_as_added_character_trigger = { LIEGE = scope:imprisoner1 }
+				}
+				add_character_flag = travl_added_character
+			}
+		}
+	}
+	else = {
+		travl_debug_log_effect = { MSG = travl_debug_msg_creating_prison_guard_character }
+		scope:imprisoner1 = { save_temporary_scope_as = value_target }
+		save_temporary_scope_as = character1
+		create_character = {
+			location = scope:character1.location
+			template = pool_repopulate_prowess
+			dynasty = none
+			faith = scope:imprisoner1.faith
+			culture = scope:imprisoner1.culture
+			gender_female_chance = scope_value_target_soldier_female_chance
+			save_temporary_scope_as = prison_guard
+		}
+		scope:prison_guard = {
+			if = {
+				limit = {
+					travl_should_mark_as_added_character_trigger = { LIEGE = scope:imprisoner1 }
+				}
+				add_character_flag = travl_added_character
+			}
+			move_to_pool = yes
+		}
+	}
+
+	scope:prison_guard = {
+		add_character_modifier = {
+			modifier = travl_prison_guard_modifier
+			years = 2
+		}
+	}
+}
+
+travl_move_added_characters_to_pool_effect = {
+	travl_move_added_character_to_pool_effect = yes
+	travl_remove_prison_guard_modifier_effect = yes
+	current_travel_plan ?= {
+		every_entourage_character = {
+			travl_move_vanilla_added_character_to_pool_effect = yes
+			travl_move_added_character_to_pool_effect = yes
+			travl_remove_prison_guard_modifier_effect = yes
+		}
+	}
+}
+
+travl_move_vanilla_added_character_to_pool_effect = {
+	if = {
+		limit = { has_character_flag = travel_option_added_character }
+		remove_character_flag = travel_option_added_character
+		select_and_move_to_pool_effect = yes
+	}
+}
+
+travl_move_added_character_to_pool_effect = {
+	if = {
+		limit = { has_character_flag = travl_added_character }
+		#travl_debug_log_effect = { MSG = travl_debug_msg_moving_added_character_back_to_pool }
+		remove_character_flag = travl_added_character
+		select_and_move_to_pool_effect = yes
+	}
+}
+
+travl_remove_prison_guard_modifier_effect = {
+	if = {
+		limit = { has_character_modifier = travl_prison_guard_modifier }
+		remove_character_modifier = travl_prison_guard_modifier
+	}
+}

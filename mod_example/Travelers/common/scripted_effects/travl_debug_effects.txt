@@ -1,0 +1,161 @@
+﻿travl_debug_set_location_date_on_set_effect = {
+	if = {
+		limit = {
+			debug_only = yes
+			NOT = { var:travl_location ?= location }
+		}
+		set_variable = { name = travl_location_date value = current_date }
+		if = {
+			limit = { exists = var:travl_location }
+			set_variable = { name = travl_prev_location value = var:travl_location }
+		}
+		else = {
+			remove_variable = travl_prev_location
+		}
+	}
+}
+
+travl_debug_set_location_date_on_remove_effect = {
+	if = {
+		limit = {
+			debug_only = yes
+			exists = var:travl_location
+		}
+		set_variable = { name = travl_location_date value = current_date }
+		set_variable = { name = travl_prev_location value = var:travl_location }
+	}
+}
+
+travl_debug_remove_location_date_effect = {
+	if = {
+		limit = { debug_only = yes }
+		remove_variable = travl_location_date
+		remove_variable = travl_prev_location
+	}
+}
+
+travl_debug_add_player_recipient_effect = {
+	if = {
+		limit = { debug_only = yes }
+		random_player = { add_to_list = $RECIPIENTS$ }
+	}
+}
+
+travl_debug_log_effect = {
+	if = {
+		limit = { debug_only = yes }
+		debug_log = $MSG$
+	}
+}
+
+travl_debug_log_teleport_effect = {
+	if = {
+		limit = {
+			debug_only = yes
+			travl_has_teleported_trigger = yes
+		}
+		debug_log = $MSG$
+	}
+}
+
+travl_debug_log_event_effect = {
+	if = {
+		limit = { debug_only = yes }
+
+		set_variable = { name = event value = flag:$EVENT$ }
+		debug_log = $MSG$
+		remove_variable = event
+	}
+}
+
+travl_debug_log_travel_event_effect = {
+	save_temporary_scope_value_as = {
+		name = danger_value
+		value = travl_travel_danger_value
+	}
+	location = {
+		travl_get_terrain_effect = yes
+	}
+	if = {
+		limit = { has_character_modifier = travl_prison_guard_modifier }
+		save_temporary_scope_as = prison_guard
+		travl_debug_log_3_effect = { MSG = $MSG$ NAME1 = danger_value TYPE1 = flag:value NAME2 = terrain TYPE2 = flag:flag NAME3 = prison_guard TYPE3 = flag:character }
+	}
+	else = {
+		travl_debug_log_2_effect = { MSG = $MSG$ NAME1 = danger_value TYPE1 = flag:value NAME2 = terrain TYPE2 = flag:flag }
+	}
+}
+
+travl_debug_log_1_effect = {
+	if = {
+		limit = { debug_only = yes }
+
+		travl_debug_set_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+		debug_log = $MSG$
+		travl_debug_remove_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+	}
+}
+
+travl_debug_log_2_effect = {
+	if = {
+		limit = { debug_only = yes }
+
+		travl_debug_set_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+		travl_debug_set_scope_variable_effect = { NAME = $NAME2$ TYPE = $TYPE2$ }
+		debug_log = $MSG$
+		travl_debug_remove_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+		travl_debug_remove_scope_variable_effect = { NAME = $NAME2$ TYPE = $TYPE2$ }
+	}
+}
+
+travl_debug_log_3_effect = {
+	if = {
+		limit = { debug_only = yes }
+
+		travl_debug_set_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+		travl_debug_set_scope_variable_effect = { NAME = $NAME2$ TYPE = $TYPE2$ }
+		travl_debug_set_scope_variable_effect = { NAME = $NAME3$ TYPE = $TYPE3$ }
+		debug_log = $MSG$
+		travl_debug_remove_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+		travl_debug_remove_scope_variable_effect = { NAME = $NAME2$ TYPE = $TYPE2$ }
+		travl_debug_remove_scope_variable_effect = { NAME = $NAME3$ TYPE = $TYPE3$ }
+	}
+}
+
+travl_error_log_1_effect = {
+	travl_debug_set_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+	error_log = $MSG$
+	travl_debug_remove_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+}
+
+travl_error_log_2_effect = {
+	travl_debug_set_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+	travl_debug_set_scope_variable_effect = { NAME = $NAME2$ TYPE = $TYPE2$ }
+	error_log = $MSG$
+	travl_debug_remove_scope_variable_effect = { NAME = $NAME1$ TYPE = $TYPE1$ }
+	travl_debug_remove_scope_variable_effect = { NAME = $NAME2$ TYPE = $TYPE2$ }
+}
+
+travl_debug_set_scope_variable_effect = {
+	if = {
+		limit = {
+			NOT = { $TYPE$ = flag:variable }
+			exists = scope:$NAME$
+			trigger_if = {
+				limit = { $TYPE$ = flag:boolean }
+				scope:$NAME$ = yes
+			}
+		}
+		set_variable = { name = $NAME$ value = scope:$NAME$ }
+	}
+}
+
+travl_debug_remove_scope_variable_effect = {
+	if = {
+		limit = {
+			NOT = { $TYPE$ = flag:variable }
+			has_variable = $NAME$
+		}
+		remove_variable = $NAME$
+	}
+}

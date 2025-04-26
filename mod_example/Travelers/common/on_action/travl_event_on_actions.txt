@@ -1,0 +1,574 @@
+﻿# Called from code after history generation
+# Empty scope
+on_game_start = {
+	on_actions = { travl_on_init }
+}
+
+travl_on_init = {
+	trigger = {
+		OR = {
+			NOT = { has_global_variable = travl_initialized }
+			AND = {
+				travl_days_since_last_event_value > 20
+				NOT = { has_global_variable = travl_initialized_today }
+			}
+		}
+	}
+	events = {
+		travl_travel.0001
+	}
+	effect = {
+		set_global_variable = travl_initialized
+		set_global_variable = { name = travl_initialized_today value = yes days = 1 }
+		travl_debug_log_effect = { MSG = travl_debug_msg_initialized }
+	}
+}
+
+# Characters getting married
+# root = Major partner of the marriage
+# scope:spouse = Minor partner of the marriage
+on_marriage = {
+	on_actions = { travl_on_init travl_on_marriage }
+}
+
+travl_on_marriage = {
+	effect = {
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			#travl_debug_log_teleport_effect = { MSG = travl_debug_msg_character_married_major }
+			travl_restore_location_if_teleported_effect = yes
+		}
+		scope:spouse = {
+			if = {
+				limit = { travl_is_teleporting_character_trigger = no }
+				if = {
+					limit = { has_variable = travl_delayed_on_action }
+					travl_travel_effect = {
+						SENDER = this
+						EVENT = flag:on_marriage
+					}
+					travl_set_location_effect = yes
+				}
+				else = {
+					#travl_debug_log_teleport_effect = { MSG = travl_debug_msg_character_married_minor }
+					travl_restore_location_if_teleported_effect = yes
+				}
+			}
+		}
+	}
+}
+
+# Characters get divorced in any way
+# root = character initiating the divorce
+# scope:spouse = the divorced spouse
+# scope:reason = flag:script or flag:faith
+on_divorce = {
+	on_actions = { travl_on_divorce }
+}
+
+travl_on_divorce = {
+	effect = {
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			#travl_debug_log_teleport_effect = { MSG = travl_debug_msg_character_divorced }
+			travl_restore_location_if_teleported_effect = yes
+		}
+		scope:spouse = {
+			if = {
+				limit = { travl_is_teleporting_character_trigger = no }
+				#travl_debug_log_teleport_effect = { MSG = travl_debug_msg_character_was_divorced }
+				travl_restore_location_if_teleported_effect = yes
+			}
+		}
+	}
+}
+
+# Character becomes another's concubine
+# root = the concubinist
+# scope:concubine = the concubine
+on_concubinage = {
+	on_actions = { travl_on_concubinage }
+}
+
+travl_on_concubinage = {
+	effect = {
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			#travl_debug_log_teleport_effect = { MSG = travl_debug_msg_character_took_concubine }
+			travl_restore_location_if_teleported_effect = yes
+		}
+		scope:concubine = {
+			if = {
+				limit = { travl_is_teleporting_character_trigger = no }
+				if = {
+					limit = { has_variable = travl_delayed_on_action }
+					travl_travel_effect = {
+						SENDER = this
+						EVENT = flag:on_concubinage
+					}
+					travl_set_location_effect = yes
+				}
+				else = {
+					#travl_debug_log_teleport_effect = { MSG = travl_debug_msg_character_was_taken_concubine }
+					travl_restore_location_if_teleported_effect = yes
+				}
+			}
+		}
+	}
+}
+
+# Character ceases to be another's concubine
+# root = the concubinist
+# scope:concubine = the concubine
+# scope:reason = flag:death, flag:faith, or flag:script
+on_concubinage_end = {
+	on_actions = { travl_on_concubinage_end }
+}
+
+travl_on_concubinage_end = {
+	effect = {
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			#travl_debug_log_teleport_effect = { MSG = travl_debug_msg_character_released_concubine }
+			travl_restore_location_if_teleported_effect = yes
+		}
+		scope:concubine = {
+			if = {
+				limit = { travl_is_teleporting_character_trigger = no }
+				#travl_debug_log_teleport_effect = { MSG = travl_debug_msg_character_was_released_concubine }
+				travl_restore_location_if_teleported_effect = yes
+			}
+		}
+	}
+}
+
+# Fires when a character joins a court. Not fired for just generated characters
+# Root is the character
+# scope:new_employer is their new employer
+# scope:old_employer is their old employer (if they had one; otherwise unset)
+on_join_court = {
+	on_actions = { travl_on_init travl_on_join_court }
+}
+
+travl_on_join_court = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_character_joined_court }
+
+		travl_notify_liege_effect = yes
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+
+			if = {
+				limit = {
+					travl_should_delay_travel_trigger = { OWNER = scope:new_employer }
+					NOT = { has_variable = travl_delayed_on_action }
+				}
+
+				# We could be joining a travel owned by scope:new_employer
+				# Delay the on_action to avoid starting a new travel if this is the case
+				#travl_debug_log_effect = { MSG = travl_debug_msg_delaying_on_join_court_event }
+				set_variable = { name = travl_delayed_on_action value = yes days = 2 }
+				trigger_event = {
+					on_action = travl_on_join_court
+					delayed = yes
+				}
+			}
+			else = {
+				if = {
+					limit = { has_variable = travl_delayed_on_action }
+					travl_travel_effect = {
+						SENDER = scope:old_employer
+						EVENT = flag:on_delayed_join_court
+					}
+					remove_variable = travl_delayed_on_action
+				}
+				else = {
+					travl_travel_effect = {
+						SENDER = scope:old_employer
+						EVENT = flag:on_join_court
+					}
+				}
+			}
+
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_join_court }
+			travl_remove_location_effect = yes
+		}
+	}
+}
+
+# Fires when a character leaves a court. Not fired when leaving due to death or similar
+# Will still fire even if on_join_court is firing (fires just before it)
+# Root is the character
+# scope:old_employer is their old employer
+on_leave_court = {
+	on_actions = { travl_on_leave_court }
+}
+
+travl_on_leave_court = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_character_left_court }
+
+		travl_notify_liege_effect = yes
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			travl_travel_effect = {
+				SENDER = scope:old_employer
+				EVENT = flag:on_leave_court
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_leave_court }
+			travl_remove_location_effect = yes
+		}
+	}
+}
+
+# Code on-action: character being imprisoned in root scope
+# imprisoning character set as scope:imprisoner
+on_imprison = {
+	on_actions = { travl_on_imprison }
+}
+
+travl_on_imprison = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_character_imprisoned }
+
+		if = {
+			limit = { has_variable = travl_combat_location }
+			travl_set_custom_location_effect = { LOCATION = var:travl_combat_location }
+		}
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			travl_travel_effect = {
+				SENDER = this
+				EVENT = flag:on_imprison
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_imprison }
+			travl_remove_location_effect = yes
+		}
+	}
+}
+
+# Code on-action: character released from prison in root scope. Does not fire when "released" due to dying
+# imprisoning character set as scope:imprisoner
+on_release_from_prison = {
+	on_actions = { travl_on_release_from_prison }
+}
+
+travl_on_release_from_prison = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_character_released_from_prison }
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			travl_travel_effect = {
+				SENDER = scope:imprisoner
+				EVENT = flag:on_release_from_prison
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_release_from_prison }
+			travl_remove_location_effect = yes
+		}
+	}
+}
+
+# A title is transferred to a new character
+# root = the new holder
+# scope:title = the title that changes hands
+# scope:previous_holder = previous holder. Might be dead
+on_title_gain = {
+	on_actions = { travl_on_title_gain }
+}
+
+travl_on_title_gain = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_character_gained_title }
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			travl_travel_effect = {
+				SENDER = this
+				EVENT = flag:on_title_gain
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_title_gain }
+			travl_remove_location_effect = yes
+		}
+
+		travl_notify_courtiers_effect = yes
+	}
+}
+
+# A title is lost by a character
+# root = the old holder
+# scope:title = the title that changes hands
+# scope:new_holder = new holder.
+on_title_lost = {
+	on_actions = { travl_on_title_lost }
+}
+
+travl_on_title_lost = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_character_lost_title }
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			travl_travel_effect = {
+				SENDER = this
+				EVENT = flag:on_title_lost
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_title_lost }
+			travl_remove_location_effect = yes
+		}
+
+		travl_notify_courtiers_effect = yes
+	}
+}
+
+# Called when realm capital changes. It can be manual move, loss in conquest, move after inheritance,
+# move when granted a better title, becoming landed for the first time
+# root: New realm capital barony
+# scope:old_capital - previous capital barony. Can be empty, can be owned by someone else
+on_realm_capital_change = {
+	on_actions = { travl_on_realm_capital_change }
+}
+
+travl_on_realm_capital_change = {
+	effect = {
+		holder = {
+			#travl_debug_log_effect = { MSG = travl_debug_msg_realm_capital_changed }
+
+			if = {
+				limit = { travl_is_teleporting_character_trigger = no }
+				travl_travel_effect = {
+					SENDER = this
+					EVENT = flag:on_realm_capital_change
+				}
+				travl_set_location_effect = yes
+			}
+			else = {
+				travl_abort_travel_effect = { EVENT = flag:on_realm_capital_change }
+				travl_remove_location_effect = yes
+			}
+
+			travl_notify_courtiers_effect = yes
+		}
+	}
+}
+
+# Called when a pool character has appeared at the court. See guest_management in common/courtier_guest_management.
+# root, scope:guest: the guest
+# host: their host (owner of the court)
+# characters: list of all characters moving together. Includes the root character.
+on_guest_arrived_from_pool = {
+	on_actions = { travl_on_guest_arrived_from_pool }
+}
+
+travl_on_guest_arrived_from_pool = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_guest_arrived_from_pool }
+
+		travl_travel_effect = {
+			SENDER = this
+			EVENT = flag:on_guest_arrived
+		}
+		travl_set_location_effect = yes
+	}
+}
+
+# Called after a set amount of time (GUEST_MOVE_TO_POOL_DELAY_MONTHS)
+# after a guest has decided to leave the court.
+# root, scope:guest: the guest
+# host: their host (owner of the court)
+# characters: list of all characters moving together. Includes the root character.
+# scope:destination: Where they should move to
+on_guest_ready_to_move_to_pool = {
+	on_actions = { travl_on_guest_ready_to_move_to_pool }
+}
+
+travl_on_guest_ready_to_move_to_pool = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_guest_moved_to_pool }
+
+		travl_abort_travel_effect = { EVENT = flag:on_guest_moved }
+		travl_remove_location_effect = yes
+	}
+}
+
+# Called from code once a year for all characters, at a random point that year (individually for each character)
+# Root is the character
+random_yearly_everyone_pulse = {
+	on_actions = { travl_random_yearly_everyone_pulse }
+}
+
+travl_random_yearly_everyone_pulse = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_character_yearly_pulse }
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			if = {
+				limit = {
+					travl_could_travel_trigger = yes
+					is_travelling = no
+				}
+				travl_travel_effect = {
+					SENDER = this
+					EVENT = flag:on_yearly_pulse
+				}
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_yearly_pulse }
+			travl_remove_location_effect = yes
+		}
+	}
+}
+
+travl_on_invalid_receiver = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_invalid_receiver_detected }
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			travl_travel_effect = {
+				SENDER = this
+				EVENT = flag:on_invalid_receiver
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_invalid_receiver }
+			travl_remove_location_effect = yes
+		}
+	}
+}
+
+travl_on_invalid_destination = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_invalid_destination_detected }
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			travl_travel_effect = {
+				SENDER = this
+				EVENT = flag:on_invalid_destination
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_invalid_destination }
+			travl_remove_location_effect = yes
+		}
+	}
+}
+
+travl_on_liege_event = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_liege_event_happened }
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			travl_travel_effect = {
+				SENDER = this
+				EVENT = flag:on_liege_event
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_liege_event }
+			travl_remove_location_effect = yes
+		}
+	}
+}
+
+travl_on_courtier_event = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_courtier_event_happened }
+
+		if = {
+			limit = { travl_is_teleporting_character_trigger = no }
+			travl_travel_effect = {
+				SENDER = this
+				EVENT = flag:on_courtier_event
+			}
+			travl_set_location_effect = yes
+		}
+		else = {
+			travl_abort_travel_effect = { EVENT = flag:on_courtier_event }
+			travl_remove_location_effect = yes
+		}
+	}
+}
+
+travl_on_teleport = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_character_teleported }
+
+		travl_notify_liege_effect = yes
+
+		travl_travel_effect = {
+			SENDER = this
+			EVENT = flag:on_teleport
+		}
+	}
+}
+
+travl_on_invalid_location = {
+	effect = {
+		#travl_debug_log_effect = { MSG = travl_debug_msg_invalid_character_location_detected }
+
+		travl_notify_liege_effect = yes
+
+		travl_travel_effect = {
+			SENDER = this
+			EVENT = flag:on_invalid_location
+		}
+	}
+}
+
+# Root = Losing combat side
+# scope:wipe - Was this a wipe?
+on_combat_end_loser = {
+	on_actions = { travl_on_combat_end_loser }
+}
+
+travl_on_combat_end_loser = {
+	effect = {
+		combat.location = { save_scope_as = combat_location }
+		every_side_knight = {
+			limit = { is_alive = yes }
+			set_variable = {
+				name = travl_combat_location
+				value = scope:combat_location
+				days = 1
+			}
+		}
+		every_side_commander = {
+			limit = { is_alive = yes }
+			set_variable = {
+				name = travl_combat_location
+				value = scope:combat_location
+				days = 1
+			}
+		}
+	}
+}

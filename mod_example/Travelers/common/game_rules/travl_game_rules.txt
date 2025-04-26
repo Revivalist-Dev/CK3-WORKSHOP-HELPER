@@ -1,0 +1,167 @@
+﻿travl_travel_messages = {
+	categories = {
+		travl_travelers
+	}
+
+	default = travl_travel_messages_enabled
+
+	travl_travel_messages_disabled = {
+		flag = GG_can_change_rule
+	}
+
+	travl_travel_messages_enabled = {
+		flag = GG_can_change_rule
+	}
+
+	travl_travel_messages_events_only = {
+		flag = GG_can_change_rule
+	}
+}
+
+travl_travel_events = {
+	categories = {
+		travl_travelers
+	}
+
+	default = travl_travel_events_enabled
+
+	travl_travel_events_disabled = {
+		flag = GG_can_change_rule
+	}
+
+	travl_travel_events_enabled = {
+		flag = GG_can_change_rule
+	}
+}
+
+travl_prison_interactions = {
+	categories = {
+		travl_travelers
+	}
+
+	default = travl_prison_interactions_disabled
+
+	travl_prison_interactions_disabled = {
+		flag = GG_can_change_rule
+	}
+
+	travl_prison_interactions_enabled = {
+		flag = GG_can_change_rule
+	}
+}
+
+travl_travel_safety = {
+	categories = {
+		travl_travelers
+	}
+
+	default = travl_travel_safety_high
+
+	travl_travel_safety_default = {
+		flag = GG_can_change_rule
+	}
+
+	travl_travel_safety_medium = {
+		flag = GG_can_change_rule
+	}
+
+	travl_travel_safety_high = {
+		flag = GG_can_change_rule
+	}
+
+	travl_travel_safety_very_high = {
+		flag = GG_can_change_rule
+	}
+}
+
+travl_prisoner_event_chance = {
+	categories = {
+		travl_travelers
+	}
+
+	default = travl_prisoner_event_chance_medium
+
+	travl_prisoner_event_chance_low = {
+		flag = GG_can_change_rule
+	}
+
+	travl_prisoner_event_chance_medium = {
+		flag = GG_can_change_rule
+	}
+
+	travl_prisoner_event_chance_high = {
+		flag = GG_can_change_rule
+	}
+}
+
+travl_interaction_range = {
+	categories = {
+		travl_travelers tweaks historicity
+	}
+
+	default = travl_interaction_range_all
+
+	travl_interaction_range_small = {
+		flag = GG_can_change_rule
+	}
+
+	travl_interaction_range_medium = {
+		flag = GG_can_change_rule
+	}
+
+	travl_interaction_range_large = {
+		flag = GG_can_change_rule
+	}
+
+	travl_interaction_range_huge = {
+		flag = GG_can_change_rule
+	}
+
+	travl_interaction_range_massive = {
+		flag = GG_can_change_rule
+	}
+
+	travl_interaction_range_all = {
+		flag = GG_can_change_rule
+	}
+}
+
+travl_teleport_detector_events = {
+	categories = {
+		travl_travelers
+	}
+
+	default = travl_teleport_detector_events_disabled
+
+	travl_teleport_detector_events_disabled = {
+		flag = GG_can_change_rule
+	}
+
+	#travl_teleport_detector_events_enabled = {
+	#	flag = GG_can_change_rule
+	#}
+}
+
+travl_teleport_detector_interval = {
+	categories = {
+		travl_travelers
+	}
+
+	default = travl_teleport_detector_interval_05
+
+	#travl_teleport_detector_interval_01 = {
+	#	flag = GG_can_change_rule
+	#}
+
+	travl_teleport_detector_interval_02 = {
+		flag = GG_can_change_rule
+	}
+
+	travl_teleport_detector_interval_05 = {
+		flag = GG_can_change_rule
+	}
+
+	travl_teleport_detector_interval_10 = {
+		flag = GG_can_change_rule
+	}
+}

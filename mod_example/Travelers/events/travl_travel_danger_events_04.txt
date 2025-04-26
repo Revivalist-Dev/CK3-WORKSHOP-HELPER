@@ -1,0 +1,265 @@
+﻿namespace = travl_travel_danger
+
+scripted_effect travl_travel_danger_0004_outcome_effect = {
+	# Setup character effects
+	travl_travel_danger_0004_$OUTCOME$_effect = yes
+
+	# Send messages to potential recipients and apply character effects
+	travl_event_apply_outcome_effect = {
+		EVENT = travel_danger_0004
+		OUTCOME = $OUTCOME$
+		RECIPIENTS = recipients
+		TRAVELERS = travelers
+	}
+}
+
+scripted_effect travl_travel_danger_0004_a_effect = {
+	every_in_list = {
+		list = travelers
+		travl_event_add_travel_waypoint_effect = { WAYPOINT = scope:oasis_province }
+	}
+}
+
+scripted_effect travl_travel_danger_0004_b_success_effect = {
+	scope:diplomacy_character = {
+		travl_event_add_stress_effect = { TRAIT = cynical VALUE = medium }
+		travl_event_add_prestige_effect = { VALUE = miniscule_prestige_value }
+	}
+}
+
+scripted_effect travl_travel_danger_0004_b_failure_effect = {
+	scope:diplomacy_character = {
+		travl_event_add_stress_effect = { TRAIT = cynical VALUE = medium }
+		travl_event_remove_prestige_effect = { VALUE = minor_prestige_value }
+	}
+	travl_travel_danger_0004_failure_effect = yes
+}
+
+scripted_effect travl_travel_danger_0004_c_success_effect = {
+	root = {
+		travl_event_add_stress_effect = { TRAIT = trusting VALUE = major }
+		travl_event_add_prestige_effect = { VALUE = miniscule_prestige_value }
+	}
+	scope:water_hider = {
+		travl_event_remove_prestige_effect = { VALUE = minor_prestige_value }
+	}
+}
+
+scripted_effect travl_travel_danger_0004_c_failure_effect = {
+	root = {
+		travl_event_add_stress_effect = { TRAIT = trusting VALUE = major }
+		travl_event_remove_prestige_effect = { VALUE = minor_prestige_value }
+	}
+	travl_travel_danger_0004_failure_effect = yes
+}
+
+scripted_effect travl_travel_danger_0004_d_effect = {
+	travl_travel_danger_0004_failure_effect = yes
+}
+
+scripted_effect travl_travel_danger_0004_failure_effect = {
+	every_in_list = {
+		list = travelers
+		random_list = {
+			5 = {
+				travl_event_death_effect = { REASON = death_thirst KILLER = this }
+			}
+			95 = {}
+		}
+	}
+}
+
+# Danger: Out of Water
+travl_travel_danger.0004 = {
+	type = character_event
+	title = travl_travel_danger.0004.t
+	desc = travl_travel_danger.0004.desc
+	theme = travel_danger
+	#hidden = yes
+
+	left_portrait = {
+		character = root
+		animation = pain
+	}
+
+	trigger = {
+		has_game_rule = travl_travel_events_enabled
+
+		# Travel leader
+		has_variable = travl_travel_leader
+		var:travl_travel_leader = root
+
+		# Available, traveling, adult, on land, and unplayable
+		is_available_travelling_adult = yes
+		is_location_valid_for_travel_event_on_land = yes
+		is_playable_character = no
+
+		# Danger types
+		location = {
+			travl_is_travel_danger_type_dry_terrain_trigger = {
+				TRAVEL_PLAN = root.current_travel_plan
+			}
+		}
+
+		# Is not an expert in this type of terrain
+		travl_event_is_location_terrain_expert_trigger = no
+	}
+
+	cooldown = { months = 6 }
+
+	immediate = {
+		travl_debug_log_travel_event_effect = { MSG = travl_debug_msg_travel_danger_0004_t }
+
+		# Get travelers and message recipients
+		travl_event_get_travelers_effect = { TRAVELERS = travelers }
+		travl_event_get_message_recipients_effect = { RECIPIENTS = recipients }
+
+		# Pick water hider
+		if = {
+			limit = { has_variable_list = travl_travel_companions }
+			random_in_list = {
+				variable = travl_travel_companions
+				limit = {
+					is_available_travelling_adult = yes
+					is_playable_character = no
+				}
+				save_scope_as = water_hider
+			}
+		}
+
+		# Find relevant travelers
+		ordered_in_list = {
+			list = travelers
+			limit = {
+				is_available_travelling_adult = yes
+				diplomacy >= low_skill_rating
+			}
+			order_by = diplomacy
+			save_scope_as = diplomacy_character
+		}
+
+		# Find oasis province
+		location = {
+			random_neighboring_province = {
+				limit = { terrain = oasis }
+				save_scope_as = oasis_province
+			}
+		}
+
+		# Save location
+		location = { save_scope_as = location }
+
+		traveler_danger_xp_effect = {
+			MIN = 3
+			MAX = 6
+		}
+	}
+
+	# Go to a nearby oasis
+	option = {
+		name = travl_travel_danger.0004.a
+
+		trigger = {
+			exists = scope:oasis_province
+		}
+
+		travl_travel_danger_0004_outcome_effect = { OUTCOME = a }
+
+		ai_chance = {
+			base = 100
+			ai_value_modifier = {
+				ai_rationality = 1
+			}
+		}
+	}
+
+	# Quench our thirst with an inspiring speech (diplomacy challenge)
+	option = {
+		name = travl_travel_danger.0004.b
+
+		trigger = {
+			list_size = {
+				name = travelers
+				value > 1
+			}
+			exists = scope:diplomacy_character
+		}
+
+		scope:diplomacy_character = {
+			duel = {
+				skill = diplomacy
+				value = decent_skill_rating
+				50 = {
+					desc = travl_travel_danger.0004.b.success
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = 3.5
+						min = -49
+					}
+					root = {
+						travl_travel_danger_0004_outcome_effect = { OUTCOME = b_success }
+					}
+				}
+				50 = {
+					desc = travl_travel_danger.0004.b.failure
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = -3.5
+						min = -49
+					}
+					root = {
+						travl_travel_danger_0004_outcome_effect = { OUTCOME = b_failure }
+					}
+				}
+			}
+		}
+
+		ai_chance = {
+			base = 100
+			ai_value_modifier = {
+				who = scope:diplomacy_character
+				ai_zeal = 0.5 # stress: cynical
+				ai_sociability = 0.5
+			}
+		}
+	}
+
+	# Interrogate a companion about a secret water supply (random chance)
+	option = {
+		name = travl_travel_danger.0004.c
+
+		trigger = {
+			exists = scope:water_hider
+		}
+
+		random_list = {
+			50 = {
+				desc = travl_travel_danger.0004.c.success
+				travl_travel_danger_0004_outcome_effect = { OUTCOME = c_success }
+			}
+			50 = {
+				desc = travl_travel_danger.0004.c.failure
+				travl_travel_danger_0004_outcome_effect = { OUTCOME = c_failure }
+			}
+		}
+
+		ai_chance = {
+			base = 100
+			ai_value_modifier = {
+				ai_sociability = -0.5 # stress: trusting
+				ai_honor = -0.5
+			}
+		}
+	}
+
+	# There is nothing we can do...
+	option = {
+		name = travl_travel_danger.0004.d
+
+		travl_travel_danger_0004_outcome_effect = { OUTCOME = d }
+
+		ai_chance = {
+			base = 1
+		}
+	}
+}

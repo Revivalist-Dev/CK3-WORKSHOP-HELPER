@@ -1,0 +1,255 @@
+﻿travl_is_teleporting_character_trigger = {
+	OR = {
+		travl_is_vanilla_teleporting_character_trigger = yes
+		travl_is_PoW_teleporting_character_trigger = yes
+		NOT = { exists = location }
+	}
+}
+
+travl_is_vanilla_teleporting_character_trigger = {
+	is_imprisoned = no
+	OR = {
+		is_pool_character = yes
+		is_in_army = yes
+		has_variable = gone_adventuring
+	}
+}
+
+travl_is_PoW_teleporting_character_trigger = {
+	PoW_is_loaded = yes
+	OR = {
+		is_in_prison_type = prisoner_of_war
+		has_variable = PoW_prison_location
+		has_variable = PoW
+		has_variable = PoW_transfer
+	}
+}
+
+travl_is_imprisoned_travelling_adult_trigger = {
+	is_alive = yes
+	is_adult = yes
+	is_imprisoned = yes
+	is_travelling = yes
+	has_contagious_deadly_disease_trigger = no
+	is_incapable = no
+	is_busy_in_events_unlocalised = no
+}
+
+travl_is_travelling_to_destination_trigger = {
+	current_travel_plan ?= {
+		travel_plan_owner = {
+			is_alive = yes
+			OR = {
+				NOT = { has_variable = travl_travel_receiver }
+				var:travl_travel_receiver = $RECEIVER$
+			}
+		}
+		final_destination_province = $DESTINATION$
+		is_aborted = no
+	}
+}
+
+travl_may_travel_to_receiver_trigger = {
+	NOR = {
+		# Imprisoned by somebody else than the receiver
+		AND = {
+			is_imprisoned = yes
+			NOT = { is_imprisoned_by = $RECEIVER$ }
+		}
+
+		# Not imprisoned, landed, and not the receiver
+		AND = {
+			is_imprisoned = no
+			exists = capital_province
+			NOT = { this = $RECEIVER$ }
+		}
+
+		# Not imprisoned and somebody else's hostage
+		AND = {
+			is_imprisoned = no
+			is_hostage = yes
+			NOT = { is_hostage_of = $RECEIVER$ }
+		}
+
+		# Not imprisoned and somebody else's guest
+		AND = {
+			is_imprisoned = no
+			is_foreign_court_guest = yes
+			NOT = { is_foreign_court_guest_of = $RECEIVER$ }
+		}
+
+		# Not imprisoned, hostage, or guest, and somebody else's courtier
+		AND = {
+			is_imprisoned = no
+			is_hostage = no
+			is_foreign_court_guest = no
+			is_courtier = yes
+			NOT = { is_courtier_of = $RECEIVER$ }
+		}
+	}
+}
+
+travl_is_in_travel_entourage_of_trigger = {
+	is_travel_entourage_character = yes
+	current_travel_plan ?= {
+		travel_plan_owner = $OWNER$
+		is_aborted = no
+	}
+}
+
+travl_is_vanilla_travel_owner_trigger = {
+	is_alive = yes
+	is_travelling = yes
+	current_travel_plan ?= {
+		travel_plan_owner = prev
+	}
+	NOT = { has_variable = travl_travel_receiver }
+}
+
+travl_is_vanilla_traveler_trigger = {
+	OR = {
+		# Travel owner involved in an activity
+		travl_is_vanilla_activity_traveler_trigger = yes
+
+		# Hostage, guardian, ward, or adoptee traveling to their temporary home
+		has_variable = hostage_travelling_to_warden
+		has_variable = guardian_travelling_to_ward
+		has_variable = ward_travelling_to_guardian
+		has_variable = adoptee_travelling_to_adopter
+
+		# Character traveling to their rites location (bp2_decision.0002)
+		# Available for landed characters and their children
+		has_variable = chosen_rite_memory
+
+		# Hostage traveling to request aid (bp2_yearly.6200)
+		has_variable = hostage_aid_request_gold
+		has_variable = hostage_aid_request_chaperone
+
+		# Vassal traveling to their liege (petition_liege_decision, pay_homage_decision)
+		# Only available for landed characters
+		#has_variable = petition_type
+		#has_variable = homage_type
+
+		# Character traveling to their meditation location (religious_decision.0201)
+		# Only available for landed characters
+		#has_variable = meditation_location
+	}
+}
+
+travl_is_vanilla_activity_traveler_trigger = {
+	exists = involved_activity
+	current_travel_plan ?= {
+		travel_plan_activity = prev.involved_activity
+		travel_plan_owner = prev
+	}
+}
+
+travl_is_PoW_traveler_trigger = {
+	PoW_is_loaded = yes
+	current_travel_plan ?= {
+		OR = {
+			has_variable = PoW_gather_commanders
+			has_variable = PoW_prisoner_transit
+			has_variable = PoW_prisoner_release
+		}
+	}
+}
+
+travl_should_delay_travel_trigger = {
+	is_travelling = no
+	$OWNER$ = {
+		is_travelling = yes
+		is_playable_character = yes
+		#current_travel_plan ?= {
+		#	days_travelled > 1
+		#}
+	}
+}
+
+travl_has_teleported_trigger = {
+	has_variable = travl_location
+	save_temporary_scope_as = character
+	var:travl_location = {
+		NOR = {
+			this = scope:character.location
+			AND = {
+				scope:character = {
+					current_travel_plan ?= {
+						current_location = scope:character.location
+					}
+				}
+				any_neighboring_province = {
+					this = scope:character.location
+				}
+			}
+		}
+	}
+}
+
+travl_is_at_current_location_trigger = {
+	current_travel_plan ?= {
+		current_location = prev.location
+	}
+}
+
+travl_should_notify_trigger = {
+	travl_could_travel_trigger = yes
+	OR = {
+		is_travelling = no
+		current_travel_plan ?= {
+			OR = {
+				is_aborted = yes
+				NOT = { final_destination_province = $DESTINATION$ }
+			}
+		}
+	}
+}
+
+travl_could_travel_trigger = {
+	NAND = {
+		location = default_location
+		OR = {
+			NOT = { has_variable = travl_location }
+			var:travl_location = location
+		}
+		#trigger_if = {
+		#	limit = { debug_only = yes }
+		#	OR = {
+		#		NOT = { has_variable = travl_prev_location }
+		#		var:travl_prev_location = location
+		#	}
+		#}
+		#trigger_else = {
+		#	always = yes
+		#}
+	}
+}
+
+travl_can_travel_to_destination_trigger = {
+	exists = $DESTINATION$
+}
+
+travl_travel_should_send_message_trigger = {
+	OR = {
+		this = $CHARACTER$
+		liege ?= $CHARACTER$
+		host ?= $CHARACTER$
+		warden ?= $CHARACTER$
+		imprisoner ?= $CHARACTER$
+	}
+}
+
+travl_can_be_prison_guard_trigger = {
+	is_available_ai_adult = yes
+	has_no_particular_noble_roots_trigger = yes
+	can_be_combatant_based_on_gender_trigger = { ARMY_OWNER = $ARMY_OWNER$ }
+	martial >= low_skill_rating
+	prowess >= mediocre_skill_rating
+	NOT = {
+		is_of_major_interest_trigger = { CHARACTER = $ARMY_OWNER$ }
+	}
+}
+
+travl_should_mark_as_added_character_trigger = {
+	exists = $LIEGE$
+}

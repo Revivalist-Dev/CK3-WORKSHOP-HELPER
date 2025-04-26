@@ -1,0 +1,93 @@
+﻿namespace = travl_travel_danger
+
+scripted_effect travl_travel_danger_0014_outcome_effect = {
+	# Setup character effects
+	travl_travel_danger_0014_$OUTCOME$_effect = yes
+
+	# Send messages to potential recipients and apply character effects
+	travl_event_apply_outcome_effect = {
+		EVENT = travel_danger_0014
+		OUTCOME = $OUTCOME$
+		RECIPIENTS = recipients
+		TRAVELERS = travelers
+	}
+}
+
+scripted_effect travl_travel_danger_0014_a_effect = {
+	every_in_list = {
+		list = travelers
+		random_list = {
+			50 = {
+				travl_event_disease_effect = { DISEASE = ill }
+			}
+			20 = {
+				travl_event_disease_effect = { DISEASE = consumption }
+			}
+			30 = {}
+		}
+	}
+}
+
+# Danger: Sickness
+travl_travel_danger.0014 = {
+	type = character_event
+	title = travl_travel_danger.0014.t
+	desc = travl_travel_danger.0014.desc
+	theme = travel_danger
+	#hidden = yes
+
+	left_portrait = {
+		character = root
+		animation = sick
+	}
+
+	trigger = {
+		has_game_rule = travl_travel_events_enabled
+
+		# Travel leader
+		has_variable = travl_travel_leader
+		var:travl_travel_leader = root
+
+		# Available, traveling, adult, and unplayable
+		is_available_travelling_adult = yes
+		is_location_valid_for_travel_event_on_land = yes
+		is_playable_character = no
+
+		# Danger types
+		location = {
+			travl_is_travel_danger_type_wet_terrain_trigger = {
+				TRAVEL_PLAN = root.current_travel_plan
+			}
+		}
+
+		# Is not an expert in this in type of terrain
+		travl_event_is_location_terrain_expert_trigger = no
+
+		# Already traveled for some time
+		current_travel_plan.days_travelled >= 15
+	}
+
+	cooldown = { months = 6 }
+
+	immediate = {
+		travl_debug_log_travel_event_effect = { MSG = travl_debug_msg_travel_danger_0014_t }
+
+		# Get travelers and message recipients
+		travl_event_get_travelers_effect = { TRAVELERS = travelers }
+		travl_event_get_message_recipients_effect = { RECIPIENTS = recipients }
+
+		# Save location
+		location = { save_scope_as = location }
+	}
+
+	# We must press on...
+	option = {
+		name = travl_travel_danger.0014.a
+
+		travl_travel_danger_0014_outcome_effect = { OUTCOME = a }
+
+		ai_chance = {
+			base = 100
+		}
+	}
+}

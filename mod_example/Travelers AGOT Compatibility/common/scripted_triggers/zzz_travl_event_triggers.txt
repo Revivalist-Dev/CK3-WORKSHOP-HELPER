@@ -1,0 +1,198 @@
+﻿travl_event_is_location_terrain_expert_trigger = {
+	OR = {
+		AND = {
+			location = {
+				OR = {
+					agot_is_forest_terrain = yes
+					agot_is_taiga_terrain = yes
+					agot_is_cloudforest_terrain = yes
+					agot_is_taiga_bog_terrain = yes
+				}
+			}
+			has_trait = forest_fighter
+		}
+		AND = {
+			location = {
+				OR = {
+					agot_is_farmlands_terrain = yes
+					agot_is_plains_terrain = yes
+					agot_is_steppe_terrain = yes
+				}
+			}
+			has_trait = open_terrain_expert
+		}
+		AND = {
+			location = {
+				OR = {
+					agot_is_hills_terrain = yes
+					agot_is_mountains_terrain = yes
+					agot_is_wetlands_terrain = yes
+					agot_is_the_bog_terrain = yes
+					agot_is_highlands_terrain = yes
+					agot_is_canyon_terrain = yes
+				}
+			}
+			has_trait = rough_terrain_expert
+		}
+		AND = {
+			location = {
+				OR = {
+					agot_is_desert_terrain = yes
+					agot_is_desert_mountains_terrain = yes
+					agot_is_drylands_terrain = yes
+					agot_is_oasis_terrain = yes
+				}
+			}
+			has_trait = desert_warrior
+		}
+		AND = {
+			location = {
+				agot_is_jungle_terrain = yes
+			}
+			has_trait = jungle_stalker
+		}
+		AND = {
+			location = {
+				OR = {
+					agot_is_glacier_terrain = yes
+					agot_is_frozen_flats_terrain = yes
+				}
+			}
+			has_trait = winter_soldier
+		}
+		AND = {
+			location = {
+				OR = {
+					terrain = sea
+					terrain = coastal_sea
+				}
+			}
+			has_trait = forder
+		}
+	}
+}
+
+travl_is_travel_danger_type_mountainous_terrain_trigger = {
+	OR = {
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = mountains
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = desert_mountains
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = highlands
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = glacier
+		}		
+	}
+}
+
+travl_is_travel_danger_type_hilly_terrain_trigger = {
+	OR = {
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = hills
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = highlands
+		}
+	}
+}
+
+travl_is_travel_danger_type_marshy_terrain_trigger = {
+	OR = {
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = wetlands
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = the_bog
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = taiga_bog
+		}
+	}
+}
+
+travl_is_travel_danger_type_flooded_terrain_trigger = {
+	agot_travel_danger_type_terrain = {
+		TRAVEL_PLAN = $TRAVEL_PLAN$
+		TERRAIN = floodplains
+	}
+}
+
+travl_is_travel_danger_type_forested_terrain_trigger = {
+	OR = {
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = forest
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = taiga
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = jungle
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = cloudforest
+		}
+	}
+}
+
+travl_is_travel_danger_type_dry_terrain_trigger = {
+	OR = {
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = desert
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = desert_mountains
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = drylands
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = steppe
+		}
+	}
+}
+
+travl_is_travel_danger_type_wet_terrain_trigger = {
+	OR = {
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = wetlands
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = jungle
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = the_bog
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = taiga_bog
+		}
+		agot_travel_danger_type_terrain = {
+			TRAVEL_PLAN = $TRAVEL_PLAN$
+			TERRAIN = cloudforest
+		}
+	}
+}

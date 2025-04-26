@@ -1,0 +1,94 @@
+﻿namespace = travl_travel
+
+travl_travel.0001 = {
+	scope = none
+	hidden = yes
+
+	immediate = {
+		travl_debug_log_effect = { MSG = travl_debug_msg_pulse_event_fired }
+
+		if = {
+			limit = {
+				NOT = { has_game_rule = travl_teleport_detector_events_disabled }
+				# If more than 20 days have passed since the last pulse event,
+				# assume saved locations are stale and don't trigger teleport detector events
+				travl_days_since_last_event_value <= 20
+			}
+
+			every_living_character = {
+				# Track location of non-teleporting characters
+				if = {
+					limit = { travl_is_teleporting_character_trigger = no }
+
+					# Detect teleports
+					if = {
+						limit = {
+							has_variable = travl_location
+							NOT = { var:travl_location = location }
+
+							NOR = {
+								# Travelling and at their current location
+								travl_is_at_current_location_trigger = yes
+
+								# Baron at their capital
+								AND = {
+									exists = capital_province
+									highest_held_title_tier = tier_barony
+									location = capital_province
+								}
+							}
+						}
+
+						trigger_event = {
+							on_action = travl_on_teleport
+						}
+					}
+
+					# Detect invalid locations
+					if = {
+						limit = {
+							has_variable = travl_location
+							var:travl_location = location
+
+							NOR = {
+								# At their default location
+								location = default_location
+
+								# Travelling
+								is_travelling = yes
+							}
+						}
+
+						trigger_event = {
+							on_action = travl_on_invalid_location
+						}
+					}
+
+					travl_set_location_with_date_effect = yes
+				}
+				else = {
+					travl_remove_location_with_date_effect = yes
+				}
+			}
+		}
+		else = {
+			every_living_character = {
+				# Track location of non-teleporting characters
+				if = {
+					limit = { travl_is_teleporting_character_trigger = no }
+					travl_set_location_with_date_effect = yes
+				}
+				else = {
+					travl_remove_location_with_date_effect = yes
+				}
+			}
+		}
+
+		set_global_variable = { name = travl_last_event_date value = current_date }
+
+		trigger_event = {
+			id = travl_travel.0001
+			days = travl_teleport_detector_interval_value
+		}
+	}
+}

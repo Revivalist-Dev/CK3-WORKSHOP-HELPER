@@ -1,0 +1,224 @@
+﻿travl_get_terrain_effect = {
+	switch = {
+		trigger = terrain
+
+		# Vanilla + roads
+		plains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:plains }
+		}
+		majorroad_plains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_plains }
+		}
+		minorroad_plains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_plains }
+		}
+		farmlands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:farmlands }
+		}
+		majorroad_farmlands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_farmlands }
+		}
+		minorroad_farmlands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_farmlands }
+		}
+		hills = {
+			save_temporary_scope_value_as = { name = terrain value = flag:hills }
+		}
+		majorroad_hills = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_hills }
+		}
+		minorroad_hills = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_hills }
+		}
+		mountains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:mountains }
+		}
+		majorroad_mountains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_mountains }
+		}
+		minorroad_mountains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_mountains }
+		}
+		desert = {
+			save_temporary_scope_value_as = { name = terrain value = flag:desert }
+		}
+		majorroad_desert = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_desert }
+		}
+		minorroad_desert = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_desert }
+		}
+		desert_mountains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:desert_mountains }
+		}
+		majorroad_desert_mountains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_desert_mountains }
+		}
+		minorroad_desert_mountains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_desert_mountains }
+		}
+		oasis = {
+			save_temporary_scope_value_as = { name = terrain value = flag:oasis }
+		}
+		majorroad_oasis = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_oasis }
+		}
+		minorroad_oasis = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_oasis }
+		}
+		jungle = {
+			save_temporary_scope_value_as = { name = terrain value = flag:jungle }
+		}
+		majorroad_jungle = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_jungle }
+		}
+		minorroad_jungle = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_jungle }
+		}
+		forest = {
+			save_temporary_scope_value_as = { name = terrain value = flag:forest }
+		}
+		majorroad_forest = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_forest }
+		}
+		minorroad_forest = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_forest }
+		}
+		taiga = {
+			save_temporary_scope_value_as = { name = terrain value = flag:taiga }
+		}
+		majorroad_taiga = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_taiga }
+		}
+		minorroad_taiga = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_taiga }
+		}
+		wetlands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:wetlands }
+		}
+		majorroad_wetlands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_wetlands }
+		}
+		minorroad_wetlands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_wetlands }
+		}
+		steppe = {
+			save_temporary_scope_value_as = { name = terrain value = flag:steppe }
+		}
+		majorroad_steppe = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_steppe }
+		}
+		minorroad_steppe = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_steppe }
+		}
+		floodplains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:floodplains }
+		}
+		majorroad_floodplains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_floodplains }
+		}
+		minorroad_floodplains = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_floodplains }
+		}
+		drylands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:drylands }
+		}
+		majorroad_drylands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_drylands }
+		}
+		minorroad_drylands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_drylands }
+		}
+
+		# AGOT + roads
+		frozen_flats = {
+			save_temporary_scope_value_as = { name = terrain value = flag:frozen_flats }
+		}
+		majorroad_frozen_flats = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_frozen_flats }
+		}
+		minorroad_frozen_flats = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_frozen_flats }
+		}
+		glacier = {
+			save_temporary_scope_value_as = { name = terrain value = flag:glacier }
+		}
+		majorroad_glacier = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_glacier }
+		}
+		minorroad_glacier = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_glacier }
+		}
+		canyon = {
+			save_temporary_scope_value_as = { name = terrain value = flag:canyon }
+		}
+		majorroad_canyon = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_canyon }
+		}
+		minorroad_canyon = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_canyon }
+		}
+		cloudforest = {
+			save_temporary_scope_value_as = { name = terrain value = flag:cloudforest }
+		}
+		majorroad_cloudforest = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_cloudforest }
+		}
+		minorroad_cloudforest = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_cloudforest }
+		}
+		highlands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:highlands }
+		}
+		majorroad_highlands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_highlands }
+		}
+		minorroad_highlands = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_highlands }
+		}
+		taiga_bog = {
+			save_temporary_scope_value_as = { name = terrain value = flag:taiga_bog }
+		}
+		majorroad_taiga_bog = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_taiga_bog }
+		}
+		minorroad_taiga_bog = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_taiga_bog }
+		}
+		urban = {
+			save_temporary_scope_value_as = { name = terrain value = flag:urban }
+		}
+		majorroad_urban = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_urban }
+		}
+		minorroad_urban = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_urban }
+		}
+		the_bog = {
+			save_temporary_scope_value_as = { name = terrain value = flag:the_bog }
+		}
+		majorroad_the_bog = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_the_bog }
+		}
+		minorroad_the_bog = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_the_bog }
+		}
+		hotsprings = {
+			save_temporary_scope_value_as = { name = terrain value = flag:hotsprings }
+		}
+		majorroad_hotsprings = {
+			save_temporary_scope_value_as = { name = terrain value = flag:majorroad_hotsprings }
+		}
+		minorroad_hotsprings = {
+			save_temporary_scope_value_as = { name = terrain value = flag:minorroad_hotsprings }
+		}
+
+		# Vanilla, sea
+		sea = {
+			save_temporary_scope_value_as = { name = terrain value = flag:sea }
+		}
+		coastal_sea = {
+			save_temporary_scope_value_as = { name = terrain value = flag:coastal_sea }
+		}
+	}
+}

@@ -1,0 +1,216 @@
+﻿namespace = travl_travel_danger
+
+scripted_effect travl_travel_danger_0007_outcome_effect = {
+	# Setup character effects
+	travl_travel_danger_0007_$OUTCOME$_effect = yes
+
+	# Send messages to potential recipients and apply character effects
+	travl_event_apply_outcome_effect = {
+		EVENT = travel_danger_0007
+		OUTCOME = $OUTCOME$
+		RECIPIENTS = recipients
+		TRAVELERS = travelers
+	}
+}
+
+scripted_effect travl_travel_danger_0007_a_success_effect = {
+	scope:prowess_character = {
+		travl_event_add_stress_effect = { TRAIT = craven VALUE = medium }
+		travl_event_add_prestige_effect = { VALUE = miniscule_prestige_value }
+	}
+}
+
+scripted_effect travl_travel_danger_0007_a_failure_effect = {
+	scope:prowess_character = {
+		travl_event_add_stress_effect = { TRAIT = craven VALUE = medium }
+		travl_event_wound_effect = { REASON = avalanche }
+	}
+	travl_travel_danger_0007_failure_effect = yes
+}
+
+scripted_effect travl_travel_danger_0007_b_effect = {
+	root = {
+		travl_event_add_stress_effect = { TRAIT = brave VALUE = medium }
+	}
+	travl_travel_danger_0007_failure_effect = yes
+}
+
+scripted_effect travl_travel_danger_0007_failure_effect = {
+	scope:avalanche_victim = {
+		random_list = {
+			50 = {
+				travl_event_wound_effect = { REASON = avalanche }
+			}
+			50 = {
+				travl_event_death_effect = { REASON = death_avalanche KILLER = this }
+			}
+		}
+	}
+	every_in_list = {
+		list = travelers
+		travl_event_delay_travel_effect = { VALUE = medium }
+	}
+}
+
+# Danger: Avalanche
+travl_travel_danger.0007 = {
+	type = character_event
+	title = travl_travel_danger.0007.t
+	desc = travl_travel_danger.0007.desc
+	theme = travel_danger
+	#hidden = yes
+
+	left_portrait = {
+		character = root
+		animation = disbelief
+	}
+	right_portrait = {
+		character = scope:avalanche_victim
+	}
+
+	trigger = {
+		has_game_rule = travl_travel_events_enabled
+
+		# Travel leader
+		has_variable = travl_travel_leader
+		var:travl_travel_leader = root
+
+		# At least one companion
+		has_variable_list = travl_travel_companions
+		any_in_list = {
+			variable = travl_travel_companions
+			is_available_travelling = yes
+			is_playable_character = no
+		}
+
+		# Available, traveling, adult, on land, and unplayable
+		is_available_travelling_adult = yes
+		is_location_valid_for_travel_event_on_land = yes
+		is_playable_character = no
+
+		# Danger types
+		location = {
+			travl_is_travel_danger_type_mountainous_terrain_trigger = {
+				TRAVEL_PLAN = root.current_travel_plan
+			}
+		}
+
+		# Has winter
+		location_has_winter_trigger = yes
+
+		# Is not an expert in this type of terrain
+		travl_event_is_location_terrain_expert_trigger = no
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			location = {
+				has_province_modifier = winter_harsh_modifier
+			}
+			factor = 2
+		}
+	}
+
+	cooldown = { months = 6 }
+
+	immediate = {
+		travl_debug_log_travel_event_effect = { MSG = travl_debug_msg_travel_danger_0007_t }
+
+		# Get travelers and message recipients
+		travl_event_get_travelers_effect = { TRAVELERS = travelers }
+		travl_event_get_message_recipients_effect = { RECIPIENTS = recipients }
+
+		# Pick missing companion
+		random_in_list = {
+			variable = travl_travel_companions
+			limit = {
+				is_available_travelling = yes
+				is_playable_character = no
+			}
+			save_scope_as = avalanche_victim
+		}
+
+		# Find relevant travelers
+		ordered_in_list = {
+			list = travelers
+			limit = {
+				NOT = { this = scope:avalanche_victim }
+				is_available_travelling_adult = yes
+				prowess >= low_skill_rating
+			}
+			order_by = prowess
+			save_scope_as = prowess_character
+		}
+
+		# Save location
+		location = { save_scope_as = location }
+
+		traveler_danger_xp_effect = {
+			MIN = 6
+			MAX = 10
+		}
+	}
+
+	# Try to rescue them (prowess challenge)
+	option = {
+		name = travl_travel_danger.0007.a
+
+		trigger = {
+			exists = scope:prowess_character
+		}
+
+		scope:prowess_character = {
+			duel = {
+				skill = prowess
+				value = high_skill_rating
+				50 = {
+					desc = travl_travel_danger.0007.a.success
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = 3.5
+						min = -49
+					}
+					root = {
+						travl_travel_danger_0007_outcome_effect = { OUTCOME = a_success }
+					}
+				}
+				50 = {
+					desc = travl_travel_danger.0007.a.failure
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = -3.5
+						min = -49
+					}
+					root = {
+						travl_travel_danger_0007_outcome_effect = { OUTCOME = a_failure }
+					}
+				}
+			}
+		}
+
+		ai_chance = {
+			base = 100
+			ai_value_modifier = {
+				who = scope:prowess_character
+				ai_boldness = 0.5 # stress: craven
+				ai_compassion = 0.5
+			}
+		}
+	}
+
+	# Don't try to rescue them
+	option = {
+		name = travl_travel_danger.0007.b
+
+		travl_travel_danger_0007_outcome_effect = { OUTCOME = b }
+
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_boldness = -0.25 # stress: brave
+				ai_compassion = -0.25
+			}
+		}
+	}
+}

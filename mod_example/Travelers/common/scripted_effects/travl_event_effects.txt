@@ -1,0 +1,731 @@
+﻿travl_event_add_prestige_effect = {
+	show_as_tooltip = {
+		add_prestige = $VALUE$
+	}
+	set_variable = { name = travl_event_prestige value = $VALUE$ }
+}
+
+travl_event_remove_prestige_effect = {
+	show_as_tooltip = {
+		add_prestige = { value = $VALUE$ multiply = -1 }
+	}
+	set_variable = { name = travl_event_prestige value = { value = $VALUE$ multiply = -1 } }
+}
+
+travl_event_add_piety_effect = {
+	show_as_tooltip = {
+		add_piety = $VALUE$
+	}
+	set_variable = { name = travl_event_piety value = $VALUE$ }
+}
+
+travl_event_remove_piety_effect = {
+	show_as_tooltip = {
+		add_piety = { value = $VALUE$ multiply = -1 }
+	}
+	set_variable = { name = travl_event_piety value = { value = $VALUE$ multiply = -1 } }
+}
+
+travl_event_add_gold_effect = {
+	show_as_tooltip = {
+		add_short_term_gold = $VALUE$
+	}
+	set_variable = { name = travl_event_gold value = $VALUE$ }
+}
+
+travl_event_remove_gold_effect = {
+	show_as_tooltip = {
+		remove_short_term_gold = $VALUE$
+	}
+	set_variable = { name = travl_event_gold value = { value = $VALUE$ multiply = -1 } }
+}
+
+travl_event_pay_gold_effect = {
+	show_as_tooltip = {
+		pay_short_term_gold = {
+			target = $TARGET$
+			gold = $VALUE$
+		}
+	}
+	set_variable = { name = travl_event_pay_gold_target value = $TARGET$ }
+	set_variable = { name = travl_event_pay_gold_value value = $VALUE$ }
+}
+
+travl_event_add_trait_effect = {
+	show_as_tooltip = {
+		add_trait = $TRAIT$
+	}
+	set_variable = { name = travl_event_trait value = flag:$TRAIT$ }
+}
+
+travl_event_disease_effect = {
+	show_as_tooltip = {
+		contract_disease_effect = { DISEASE = $DISEASE$ TREATMENT_EVENT = yes }
+	}
+	set_variable = { name = travl_event_disease value = flag:$DISEASE$ }
+}
+
+travl_event_epidemic_effect = {
+	show_as_tooltip = {
+		add_trait = $EPIDEMIC$.epidemic_type.epidemic_trait
+	}
+	set_variable = { name = travl_event_epidemic value = $EPIDEMIC$ }
+}
+
+travl_event_add_stress_effect = {
+	show_as_tooltip = {
+		stress_impact = { $TRAIT$ = $VALUE$_stress_impact_gain }
+	}
+	set_variable = { name = travl_event_stress_gain_trait value = flag:$TRAIT$ }
+	set_variable = { name = travl_event_stress_gain_value value = flag:$VALUE$ }
+}
+
+travl_event_add_modifier_effect = {
+	show_as_tooltip = {
+		add_character_modifier = { modifier = $MODIFIER$ years = 1 }
+	}
+	set_variable = { name = travl_event_modifier value = flag:$MODIFIER$ }
+}
+
+travl_event_visit_court_effect = {
+	show_as_tooltip = {
+		$HOST$ = {
+			add_visiting_courtier = prev
+		}
+	}
+	set_variable = { name = travl_event_host value = $HOST$ }
+}
+
+travl_event_add_traveler_xp_effect = {
+	show_as_tooltip = {
+		if = {
+			limit = { NOT = { has_trait = lifestyle_traveler } }
+			add_trait = lifestyle_traveler
+		}
+		traveler_danger_xp_effect = { MIN = travl_$VALUE$_danger_xp_min_value MAX = travl_$VALUE$_danger_xp_max_value }
+	}
+	set_variable = { name = travl_event_xp value = flag:$VALUE$ }
+}
+
+travl_event_delay_travel_effect = {
+	show_as_tooltip = {
+		current_travel_plan ?= {
+			delay_travel_plan = { days = travl_$VALUE$_travel_delay_value add = no }
+		}
+	}
+	set_variable = { name = travl_event_travel_delay value = flag:$VALUE$ }
+}
+
+travl_event_add_travel_modifier_effect = {
+	show_as_tooltip = {
+		current_travel_plan ?= {
+			add_travel_plan_modifier = $MODIFIER$
+		}
+	}
+	set_variable = { name = travl_event_travel_modifier value = flag:$MODIFIER$ }
+}
+
+travl_event_add_travel_waypoint_effect = {
+	show_as_tooltip = {
+		current_travel_plan ?= {
+			add_travel_waypoint = $WAYPOINT$
+		}
+	}
+	set_variable = { name = travl_event_travel_waypoint value = $WAYPOINT$ }
+}
+
+travl_event_had_sex_with_effect = {
+	show_as_tooltip = {
+		had_sex_with_effect = {
+			CHARACTER = $TARGET$
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+	}
+	set_variable = { name = travl_event_had_sex value = $TARGET$ }
+}
+
+travl_event_escape_from_prison_effect = {
+	show_as_tooltip = {
+		release_from_prison = yes
+	}
+	set_variable = { name = travl_event_escape_from_prison value = yes }
+}
+
+travl_event_imprison_effect = {
+	show_as_tooltip = {
+		$IMPRISONER$ ?= {
+			imprison = {
+				target = prev
+				type = dungeon
+			}
+		}
+	}
+	set_variable = { name = travl_event_imprison value = $IMPRISONER$ }
+}
+
+travl_event_wound_effect = {
+	show_as_tooltip = {
+		increase_wounds_effect = { REASON = $REASON$ }
+	}
+	set_variable = { name = travl_event_wound value = flag:$REASON$ }
+}
+
+travl_event_animal_wound_effect = {
+	show_as_tooltip = {
+		hunt_animal_wound_effect = { VARIABLE = $ANIMAL_TYPE$ }
+	}
+	set_variable = { name = travl_event_wound value = $ANIMAL_TYPE$ }
+	set_variable = { name = travl_event_animal_wound value = yes }
+}
+
+travl_event_death_effect = {
+	show_as_tooltip = {
+		if = {
+			limit = { NOT = { $KILLER$ = this } }
+			death = { death_reason = $REASON$ killer = $KILLER$ }
+		}
+		else = {
+			death = { death_reason = $REASON$ }
+		}
+	}
+	set_variable = { name = travl_event_death value = flag:$REASON$ }
+	set_variable = { name = travl_event_killer value = $KILLER$ }
+}
+
+travl_event_animal_death_effect = {
+	show_as_tooltip = {
+		hunt_animal_death_effect = { VAR =  $ANIMAL_TYPE$ }
+	}
+	set_variable = { name = travl_event_death value = $ANIMAL_TYPE$ }
+	set_variable = { name = travl_event_animal_death value = yes }
+}
+
+travl_event_apply_outcome_effect = {
+	travl_debug_log_effect = { MSG = travl_debug_msg_$EVENT$_$OUTCOME$ }
+
+	# Send messages to potential recipients
+	hidden_effect = {
+		travl_send_event_messages_effect = {
+			RECIPIENTS = $RECIPIENTS$
+			TRAVELERS = $TRAVELERS$
+			TITLE = travl_msg_$EVENT$_t
+			TEXT = travl_msg_$EVENT$_$OUTCOME$
+		}
+	}
+
+	# Apply character effects
+	every_in_list = {
+		list = $TRAVELERS$
+		travl_event_apply_character_effect = yes
+	}
+	travl_escape_from_prison_prisoners_effect = {
+		PRISONERS = escaped_prisoners
+	}
+	travl_imprison_prisoners_effect = {
+		PRISONERS = imprisoned_prisoners
+		IMPRISONER = scope:imprisoner
+	}
+}
+
+travl_send_event_messages_effect = {
+	if = {
+		limit = {
+			NOT = { has_game_rule = travl_travel_messages_disabled }
+		}
+
+		save_temporary_scope_as = character
+		every_in_list = {
+			list = $RECIPIENTS$
+			send_interface_message = {
+				type = travl_msg_danger_event
+				title = $TITLE$
+				right_icon = scope:character
+
+				scope:character = {
+					custom_tooltip = $TEXT$
+				}
+
+				show_as_tooltip = {
+					every_in_list = {
+						list = $TRAVELERS$
+						travl_event_apply_character_effect = yes
+					}
+					travl_escape_from_prison_prisoners_effect = {
+						PRISONERS = escaped_prisoners
+					}
+					travl_imprison_prisoners_effect = {
+						PRISONERS = imprisoned_prisoners
+						IMPRISONER = scope:imprisoner
+					}
+				}
+			}
+		}
+	}
+}
+
+travl_event_apply_character_effect = {
+	# Gain or lose prestige
+	if = {
+		limit = { has_variable = travl_event_prestige }
+		if = {
+			limit = { var:travl_event_prestige > 0 }
+			travl_debug_log_effect = { MSG = travl_debug_msg_event_character_gained_prestige }
+			add_prestige = var:travl_event_prestige
+		}
+		else = {
+			travl_debug_log_effect = { MSG = travl_debug_msg_event_character_lost_prestige }
+			add_prestige = var:travl_event_prestige
+		}
+	}
+
+	# Gain or lose piety
+	if = {
+		limit = { has_variable = travl_event_piety }
+		if = {
+			limit = { var:travl_event_piety > 0 }
+			travl_debug_log_effect = { MSG = travl_debug_msg_event_character_gained_piety }
+			add_piety = var:travl_event_piety
+		}
+		else = {
+			travl_debug_log_effect = { MSG = travl_debug_msg_event_character_lost_piety }
+			add_piety = var:travl_event_piety
+		}
+	}
+
+	# Gain or lose gold
+	if = {
+		limit = { has_variable = travl_event_gold }
+		if = {
+			limit = { var:travl_event_gold > 0 }
+			travl_debug_log_effect = { MSG = travl_debug_msg_event_character_gained_gold }
+			add_short_term_gold = var:travl_event_gold
+		}
+		else = {
+			travl_debug_log_effect = { MSG = travl_debug_msg_event_character_lost_gold }
+			remove_short_term_gold = { value = var:travl_event_gold multiply = -1 }
+		}
+	}
+
+	# Pay gold
+	if = {
+		limit = { has_variable = travl_event_pay_gold_target }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_paid_gold }
+		pay_short_term_gold = {
+			target = var:travl_event_pay_gold_target
+			gold = var:travl_event_pay_gold_value
+		}
+	}
+
+	# Injure (maimed, etc.)
+	if = {
+		limit = { has_variable = travl_event_trait }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_injured }
+		switch = {
+			trigger = var:travl_event_trait
+			flag:maimed = {
+				add_trait = maimed
+			}
+		}
+	}
+
+	# Contract disease
+	if = {
+		limit = { has_variable = travl_event_disease }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_diseased }
+		switch = {
+			trigger = var:travl_event_disease
+			flag:ill = {
+				contract_disease_effect = { DISEASE = ill TREATMENT_EVENT = yes }
+			}
+			flag:consumption = {
+				contract_disease_effect = { DISEASE = consumption TREATMENT_EVENT = yes }
+			}
+		}
+	}
+
+	# Get infected
+	if = {
+		limit = { has_variable = travl_event_epidemic }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_got_infected }
+		add_trait = var:travl_event_epidemic.epidemic_type.epidemic_trait
+	}
+
+	# Stress impact
+	if = {
+		limit = { has_variable = travl_event_stress_gain_trait }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_gained_stress }
+		switch = {
+			trigger = var:travl_event_stress_gain_value
+			flag:massive = {
+				travl_event_apply_stress_impact_effect = { VALUE = massive_stress_impact_gain }
+			}
+			flag:major = {
+				travl_event_apply_stress_impact_effect = { VALUE = major_stress_impact_gain }
+			}
+			flag:medium = {
+				travl_event_apply_stress_impact_effect = { VALUE = medium_stress_impact_gain }
+			}
+		}
+	}
+
+	# Add character modifier
+	if = {
+		limit = { has_variable = travl_event_modifier }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_added_modifier }
+		switch = {
+			trigger = var:travl_event_modifier
+			flag:drained_by_mosquitoes_modifier = {
+				add_character_modifier = { modifier = drained_by_mosquitoes_modifier years = 1 }
+			}
+		}
+	}
+
+	# Start travel to host (must be before travel plan changes)
+	if = {
+		limit = { has_variable = travl_event_host }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_joined_travel }
+		custom_tooltip = {
+			text = travl_they_got_a_visitor_tt
+			var:travl_event_host = {
+				add_visiting_courtier = prev
+			}
+		}
+		set_location = root.location
+		travl_travel_effect = {
+			SENDER = this
+			EVENT = flag:travel_event
+		}
+		travl_set_location_effect = yes
+	}
+
+	# Gain traveler danger XP
+	if = {
+		limit = { has_variable = travl_event_xp }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_gained_traveler_xp }
+		if = {
+			limit = { NOT = { has_trait = lifestyle_traveler } }
+			add_trait = lifestyle_traveler
+		}
+		switch = {
+			trigger = var:travl_event_xp
+			flag:minor = {
+				traveler_danger_xp_effect = { MIN = travl_minor_danger_xp_min_value MAX = travl_minor_danger_xp_max_value }
+			}
+			flag:medium = {
+				traveler_danger_xp_effect = { MIN = travl_medium_danger_xp_min_value MAX = travl_medium_danger_xp_max_value }
+			}
+			flag:major = {
+				traveler_danger_xp_effect = { MIN = travl_major_danger_xp_min_value MAX = travl_major_danger_xp_max_value }
+			}
+		}
+	}
+
+	# Delay travel plan
+	if = {
+		limit = { has_variable = travl_event_travel_delay }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_travel_delayed }
+		switch = {
+			trigger = var:travl_event_travel_delay
+			flag:minor = {
+				current_travel_plan ?= {
+					delay_travel_plan = { days = travl_minor_travel_delay_value add = no }
+				}
+			}
+			flag:medium = {
+				current_travel_plan ?= {
+					delay_travel_plan = { days = travl_medium_travel_delay_value add = no }
+				}
+			}
+			flag:major = {
+				current_travel_plan ?= {
+					delay_travel_plan = { days = travl_major_travel_delay_value add = no }
+				}
+			}
+		}
+	}
+
+	# Add travel plan modifier
+	if = {
+		limit = { has_variable = travl_event_travel_modifier }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_travel_added_modifier }
+		switch = {
+			trigger = var:travl_event_travel_modifier
+			flag:travel_guide_modifier = {
+				current_travel_plan ?= {
+					add_travel_plan_modifier = travel_guide_modifier
+				}
+			}
+			flag:no_water_modifier = {
+				current_travel_plan ?= {
+					add_travel_plan_modifier = no_water_modifier
+				}
+			}
+		}
+	}
+
+	# Add travel plan waypoint
+	if = {
+		limit = { has_variable = travl_event_travel_waypoint }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_travel_added_waypoint }
+		current_travel_plan ?= {
+			add_travel_waypoint = prev.var:travl_event_travel_waypoint
+		}
+	}
+
+	# Had sex
+	if = {
+		limit = { has_variable = travl_event_had_sex }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_had_sex }
+		var:travl_event_had_sex = { save_temporary_scope_as = partner }
+		had_sex_with_effect = {
+			CHARACTER = scope:partner
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+	}
+
+	# Escape from prison
+	if = {
+		limit = {
+			has_variable = travl_event_escape_from_prison
+			is_imprisoned = yes
+		}
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_escaped_from_prison }
+		add_to_list = escaped_prisoners
+	}
+
+	# Imprison
+	if = {
+		limit = { has_variable = travl_event_imprison }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_imprisoned }
+		var:travl_event_imprison = { save_temporary_scope_as = imprisoner }
+		add_to_list = imprisoned_prisoners
+	}
+
+	# Increase wounds (must be second to last, since the character may die)
+	if = {
+		limit = { has_variable = travl_event_wound }
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_wounded }
+		switch = {
+			trigger = var:travl_event_wound
+			flag:fight = {
+				increase_wounds_effect = { REASON = fight }
+			}
+			flag:avalanche = {
+				increase_wounds_effect = { REASON = avalanche }
+			}
+			flag:burned = {
+				increase_wounds_effect = { REASON = burned }
+			}
+			flag:whipping = {
+				increase_wounds_effect = { REASON = whipping }
+			}
+			fallback = {
+				if = {
+					limit = { has_variable = travl_event_animal_wound }
+					hunt_animal_wound_effect = { VARIABLE = var:travl_event_wound }
+				}
+			}
+		}
+	}
+
+	# Death (must be last)
+	if = {
+		limit = {
+			is_alive = yes
+			has_variable = travl_event_death
+		}
+		travl_debug_log_effect = { MSG = travl_debug_msg_event_character_died }
+		switch = {
+			trigger = var:travl_event_death
+			flag:death_fight = {
+				death = { death_reason = death_fight killer = var:travl_event_killer }
+			}
+			flag:death_lost_in_the_bog = {
+				death = { death_reason = death_lost_in_the_bog }
+			}
+			flag:death_lost_in_the_forest = {
+				death = { death_reason = death_lost_in_the_forest }
+			}
+			flag:death_thirst = {
+				death = { death_reason = death_thirst }
+			}
+			flag:death_sea_storm = {
+				death = { death_reason = death_sea_storm }
+			}
+			flag:death_avalanche = {
+				death = { death_reason = death_avalanche }
+			}
+			flag:death_fire = {
+				death = { death_reason = death_fire }
+			}
+			flag:death_poisonous_forage = {
+				death = { death_reason = death_poisonous_forage }
+			}
+			fallback = {
+				if = {
+					limit = { has_variable = travl_event_animal_death }
+					hunt_animal_death_effect = { VAR = var:travl_event_death }
+				}
+			}
+		}
+	}
+
+	# Remove event variables
+	if = {
+		limit = { is_alive = yes }
+		remove_variable = travl_event_prestige
+		remove_variable = travl_event_piety
+		remove_variable = travl_event_gold
+		remove_variable = travl_event_pay_gold_target
+		remove_variable = travl_event_pay_gold_value
+		remove_variable = travl_event_trait
+		remove_variable = travl_event_disease
+		remove_variable = travl_event_epidemic
+		remove_variable = travl_event_stress_gain_trait
+		remove_variable = travl_event_stress_gain_value
+		remove_variable = travl_event_modifier
+		remove_variable = travl_event_host
+		remove_variable = travl_event_xp
+		remove_variable = travl_event_travel_delay
+		remove_variable = travl_event_travel_modifier
+		remove_variable = travl_event_travel_waypoint
+		remove_variable = travl_event_had_sex
+		remove_variable = travl_event_escape_from_prison
+		remove_variable = travl_event_imprison
+		remove_variable = travl_event_wound
+		remove_variable = travl_event_animal_wound
+		remove_variable = travl_event_death
+		remove_variable = travl_event_animal_death
+		remove_variable = travl_event_killer
+	}
+}
+
+travl_event_apply_stress_impact_effect = {
+	switch = {
+		trigger = var:travl_event_stress_gain_trait
+		flag:brave = {
+			stress_impact = { brave = $VALUE$ }
+		}
+		flag:craven = {
+			stress_impact = { craven = $VALUE$ }
+		}
+		flag:chaste = {
+			stress_impact = { chaste = $VALUE$ }
+		}
+		flag:lustful = {
+			stress_impact = { lustful = $VALUE$ }
+		}
+		flag:forgiving = {
+			stress_impact = { forgiving = $VALUE$ }
+		}
+		flag:vengeful = {
+			stress_impact = { vengeful = $VALUE$ }
+		}
+		flag:generous = {
+			stress_impact = { generous = $VALUE$ }
+		}
+		flag:greedy = {
+			stress_impact = { greedy = $VALUE$ }
+		}
+		flag:gregarious = {
+			stress_impact = { gregarious = $VALUE$ }
+		}
+		flag:shy = {
+			stress_impact = { shy = $VALUE$ }
+		}
+		flag:honest = {
+			stress_impact = { honest = $VALUE$ }
+		}
+		flag:deceitful = {
+			stress_impact = { deceitful = $VALUE$ }
+		}
+		flag:just = {
+			stress_impact = { just = $VALUE$ }
+		}
+		flag:arbitrary = {
+			stress_impact = { arbitrary = $VALUE$ }
+		}
+		flag:patient = {
+			stress_impact = { patient = $VALUE$ }
+		}
+		flag:impatient = {
+			stress_impact = { impatient = $VALUE$ }
+		}
+		flag:trusting = {
+			stress_impact = { trusting = $VALUE$ }
+		}
+		flag:paranoid = {
+			stress_impact = { paranoid = $VALUE$ }
+		}
+		flag:zealous = {
+			stress_impact = { zealous = $VALUE$ }
+		}
+		flag:cynical = {
+			stress_impact = { cynical = $VALUE$ }
+		}
+		flag:compassionate = {
+			stress_impact = { compassionate = $VALUE$ }
+		}
+		flag:callous = {
+			stress_impact = { callous = $VALUE$ }
+		}
+		flag:sadistic = {
+			stress_impact = { sadistic = $VALUE$ }
+		}
+	}
+}
+
+travl_event_get_travelers_effect = {
+	var:travl_travel_leader ?= {
+		travl_get_companions_effect = { COMPANIONS = companions }
+	}
+
+	# Add leader, non-ruler companions, and imprisoned ruler companions and their travel leaders
+	var:travl_travel_leader ?= {
+		add_to_list = $TRAVELERS$
+	}
+	every_in_list = {
+		list = companions
+		limit = {
+			OR = {
+				is_ruler = no
+				is_imprisoned = yes
+			}
+		}
+		add_to_list = $TRAVELERS$
+		current_travel_plan.travel_leader ?= {
+			add_to_list = $TRAVELERS$
+		}
+	}
+}
+
+travl_event_get_prisoners_effect = {
+	var:travl_travel_leader ?= {
+		travl_get_companions_effect = { COMPANIONS = companions }
+	}
+
+	# Add leader if imprisoned and all imprisoned companions
+	var:travl_travel_leader ?= {
+		if = {
+			limit = { is_imprisoned = yes }
+			add_to_list = $PRISONERS$
+		}
+	}
+	ordered_in_list = {
+		list = companions
+		limit = { is_imprisoned = yes }
+		add_to_list = $PRISONERS$
+	}
+}
+
+travl_event_get_message_recipients_effect = {
+	var:travl_travel_sender ?= { save_temporary_scope_as = sender }
+	var:travl_travel_receiver ?= { save_temporary_scope_as = receiver }
+
+	# Get standard recipients (sender and / or recieiver)
+	travl_get_message_recipients_effect = {
+		SENDER = scope:sender
+		RECEIVER = scope:receiver
+		RECIPIENTS = $RECIPIENTS$
+	}
+}

@@ -1,6 +1,5 @@
 import json
 import os
-import asyncio
 from typing import Dict, Any, TypedDict, Optional
 
 
@@ -19,11 +18,11 @@ DEFAULT_CONFIG: Config = {
 CONFIG_PATH = 'config.json'
 
 
-async def load_config() -> Config:
+def load_config() -> Config:
     """Load configuration from file or return defaults"""
     try:
-        async with open(CONFIG_PATH, 'r') as config_file:
-            content = await asyncio.to_thread(config_file.read)
+        with open(CONFIG_PATH, 'r') as config_file:
+            content = config_file.read()
             loaded_config = json.loads(content)
             # Merge with defaults to ensure all keys exist
             return {**DEFAULT_CONFIG, **loaded_config}
@@ -31,19 +30,19 @@ async def load_config() -> Config:
         return DEFAULT_CONFIG.copy()
 
 
-async def save_config(config: Config) -> None:
+def save_config(config: Config) -> None:
     """Save configuration to file"""
-    async with open(CONFIG_PATH, 'w') as config_file:
+    with open(CONFIG_PATH, 'w') as config_file:
         content = json.dumps(config, indent=2)
-        await asyncio.to_thread(config_file.write, content)
+        config_file.write(content)
 
 
-async def setup_config() -> Config:
+def setup_config() -> Config:
     """Interactive setup for configuration"""
     print('CK3 Workshop Local Setup')
     print('=======================')
 
-    config = await load_config()
+    config = load_config()
 
     # Ask for Steam Workshop path
     print('Enter your CK3 Steam Workshop mods directory')
@@ -71,7 +70,7 @@ async def setup_config() -> Config:
         print(f"Failed to create output directory: {error}")
         raise
 
-    await save_config(config)
+    save_config(config)
     
     print('\nConfiguration and directories setup successfully!')
     return config

@@ -1,6 +1,4 @@
 import os
-import asyncio
-import aiofiles
 from enum import Enum
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -19,7 +17,7 @@ class Logger:
         today = datetime.now().strftime("%Y-%m-%d")
         self.current_log_file = os.path.join(self.log_dir, f"ck3-workshop-{today}.log")
 
-    async def init(self) -> None:
+    def init(self) -> None:
         """Initialize the logger by creating the log directory"""
         os.makedirs(self.log_dir, exist_ok=True)
 
@@ -28,30 +26,30 @@ class Logger:
         timestamp = datetime.now().isoformat()
         return f"[{timestamp}] {level.value}: {message}"
 
-    async def log(self, level: LogLevel, message: str) -> None:
+    def log(self, level: LogLevel, message: str) -> None:
         """Log a message to console and file"""
         formatted_message = self.format_message(level, message)
         print(formatted_message)
         
         try:
-            async with aiofiles.open(self.current_log_file, mode='a') as f:
-                await f.write(formatted_message + '\n')
+            with open(self.current_log_file, mode='a') as f:
+                f.write(formatted_message + '\n')
         except Exception as error:
             print(f"Failed to write to log file: {error}")
 
-    async def debug(self, message: str) -> None:
+    def debug(self, message: str) -> None:
         """Log a debug message"""
-        await self.log(LogLevel.DEBUG, message)
+        self.log(LogLevel.DEBUG, message)
 
-    async def info(self, message: str) -> None:
+    def info(self, message: str) -> None:
         """Log an info message"""
-        await self.log(LogLevel.INFO, message)
+        self.log(LogLevel.INFO, message)
 
-    async def warn(self, message: str) -> None:
+    def warn(self, message: str) -> None:
         """Log a warning message"""
-        await self.log(LogLevel.WARN, message)
+        self.log(LogLevel.WARN, message)
 
-    async def error(self, message: str, error: Exception = None) -> None:
+    def error(self, message: str, error: Exception = None) -> None:
         """Log an error message with optional stack trace"""
         if error:
             error_message = f"{message}\nStack trace:\n{error.__class__.__name__}: {error}"
@@ -63,9 +61,9 @@ class Logger:
         else:
             error_message = message
             
-        await self.log(LogLevel.ERROR, error_message)
+        self.log(LogLevel.ERROR, error_message)
 
-    async def cleanup(self, retain_days: int = 7) -> None:
+    def cleanup(self, retain_days: int = 7) -> None:
         """Delete log files older than the specified number of days"""
         try:
             now = datetime.now()
